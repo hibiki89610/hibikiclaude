@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EmmaTools 顧客カルテ生成ツール</title>
+<style>
+:root {
+  --primary: #2563eb;
+  --primary-light: #eff6ff;
+  --primary-border: #bfdbfe;
+  --bg: #f1f5f9;
+  --surface: #ffffff;
+  --border: #e2e8f0;
+  --text: #1e293b;
+  --muted: #64748b;
+  --green: #16a34a;
+  --green-light: #f0fdf4;
+  --orange: #ea580c;
+  --orange-light: #fff7ed;
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.65; min-height: 100vh; }
+
+/* ─── Header ─── */
+.header { background: var(--primary); color: #fff; padding: 16px 24px; display: flex; align-items: center; gap: 14px; }
+.header-logo { font-size: 20px; font-weight: 800; letter-spacing: -.5px; }
+.header-sub { font-size: 12px; opacity: .75; margin-top: 2px; }
+
+/* ─── Flow bar ─── */
+.flow { display: flex; align-items: center; background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 24px; overflow-x: auto; }
+.flow-step { display: flex; align-items: center; gap: 8px; padding: 14px 16px; font-size: 13px; font-weight: 600; color: var(--muted); white-space: nowrap; cursor: pointer; border-bottom: 3px solid transparent; transition: all .15s; }
+.flow-step.active { color: var(--primary); border-bottom-color: var(--primary); }
+.flow-step .num { background: var(--border); color: var(--muted); border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+.flow-step.active .num { background: var(--primary); color: #fff; }
+.flow-arrow { color: var(--border); font-size: 16px; flex-shrink: 0; }
+
+/* ─── Layout ─── */
+.main { max-width: 820px; margin: 0 auto; padding: 28px 16px 60px; }
+
+/* ─── Panel ─── */
+.panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden; display: none; }
+.panel.visible { display: block; }
+.panel-head { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.panel-num { background: var(--primary); color: #fff; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+.panel-title { font-size: 16px; font-weight: 700; }
+.panel-desc { font-size: 12px; color: var(--muted); margin-top: 1px; }
+.panel-body { padding: 20px; }
+
+/* ─── Forms ─── */
+.section-label { font-size: 11px; font-weight: 700; color: var(--primary); letter-spacing: .06em; text-transform: uppercase; margin: 18px 0 10px; display: flex; align-items: center; gap: 6px; }
+.section-label:first-child { margin-top: 0; }
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--primary-border); }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+@media (max-width: 600px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label { font-size: 12px; font-weight: 600; color: var(--muted); }
+.field label .req { color: #ef4444; margin-left: 2px; }
+.field input, .field select, .field textarea {
+  border: 1.5px solid var(--border); border-radius: 7px; padding: 8px 11px;
+  font-size: 13px; font-family: inherit; color: var(--text); background: var(--surface);
+  transition: border .15s;
+}
+.field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--primary); }
+.field textarea { resize: vertical; min-height: 80px; }
+.field .hint { font-size: 11px; color: var(--muted); }
+.check-group { display: flex; gap: 12px; flex-wrap: wrap; }
+.check-group label { display: flex; align-items: center; gap: 5px; font-size: 13px; cursor: pointer; }
+.check-group input { accent-color: var(--primary); }
+
+/* ─── Buttons ─── */
+.btn { display: inline-flex; align-items: center; gap: 7px; padding: 10px 20px; border: none; border-radius: 7px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all .15s; font-family: inherit; }
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: #1d4ed8; transform: translateY(-1px); }
+.btn-green { background: var(--green); color: #fff; }
+.btn-green:hover { background: #15803d; transform: translateY(-1px); }
+.btn-outline { background: transparent; color: var(--primary); border: 1.5px solid var(--primary); }
+.btn-outline:hover { background: var(--primary-light); }
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 16px; }
+.copy-ok { font-size: 12px; color: var(--green); display: none; font-weight: 600; }
+
+/* ─── Output areas ─── */
+.output-box { border: 1.5px solid var(--border); border-radius: 8px; padding: 14px; font-size: 12px; font-family: 'Courier New', monospace; min-height: 160px; resize: vertical; background: #0f172a; color: #94a3b8; line-height: 1.75; width: 100%; }
+.output-box.has-content { color: #e2e8f0; }
+.paste-box { width: 100%; border: 1.5px dashed var(--border); border-radius: 8px; padding: 12px; font-size: 12px; font-family: 'Courier New', monospace; min-height: 140px; resize: vertical; background: #fafafa; line-height: 1.7; }
+.paste-box:focus { outline: none; border-color: var(--primary); border-style: solid; background: var(--surface); }
+
+/* ─── Callouts ─── */
+.callout { border-radius: 9px; padding: 13px 16px; font-size: 13px; margin-bottom: 16px; }
+.callout-blue { background: var(--primary-light); border: 1px solid var(--primary-border); }
+.callout-blue strong { color: var(--primary); }
+.callout-green { background: var(--green-light); border: 1px solid #bbf7d0; }
+.callout-green strong { color: var(--green); }
+.callout-orange { background: var(--orange-light); border: 1px solid #fed7aa; }
+.callout-orange strong { color: var(--orange); }
+.callout ol, .callout ul { margin-left: 18px; margin-top: 6px; }
+.callout li { margin-bottom: 3px; }
+.step-badge { display: inline-flex; align-items: center; gap: 5px; background: var(--primary); color: #fff; border-radius: 5px; padding: 1px 8px; font-size: 11px; font-weight: 700; vertical-align: middle; }
+
+/* ─── Nav buttons ─── */
+.nav-row { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--border); }
+
+/* ─── Karte tables ─── */
+.karte-table table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.karte-table th, .karte-table td { border: 1px solid var(--border); padding: 9px 11px; text-align: left; vertical-align: top; }
+.karte-table th { background: var(--primary-light); color: var(--primary); font-weight: 700; white-space: nowrap; }
+.karte-table td:first-child { font-weight: 600; white-space: nowrap; background: #f8fafc; }
+.karte-table .pri-high { color: var(--green); font-weight: 700; }
+.karte-table .pri-mid  { color: var(--orange); font-weight: 700; }
+.karte-table .pri-low  { color: var(--muted); font-weight: 700; }
+.karte-table .hear { color: var(--orange); }
+.src { color: var(--muted); font-size: 11px; }
+@media print {
+  .header, .flow, .btn-row, .nav-row, .callout { display: none !important; }
+  .panel { box-shadow: none; border: none; }
+  body { background: #fff; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-logo">EmmaTools CS</div>
+    <div class="header-sub">顧客カルテ生成ツール — 商談準備をAIで効率化</div>
+  </div>
+</div>
+
+<div class="flow">
+  <div class="flow-step active" id="tab1" onclick="goTo(1)">
+    <div class="num">1</div>顧客情報を入力
+  </div>
+  <div class="flow-arrow">›</div>
+  <div class="flow-step" id="tab2" onclick="goTo(2)">
+    <div class="num">2</div>DeepResearchを実行
+  </div>
+  <div class="flow-arrow">›</div>
+  <div class="flow-step" id="tab3" onclick="goTo(3)">
+    <div class="num">3</div>カルテを生成
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- ══════════════ STEP 1 ══════════════ -->
+  <div class="panel visible" id="panel1">
+    <div class="panel-head">
+      <div class="panel-num">1</div>
+      <div>
+        <div class="panel-title">顧客情報を入力</div>
+        <div class="panel-desc">企業名・商材・KPI・課題感など基本情報を入力してください</div>
+      </div>
+    </div>
+    <div class="panel-body">
+
+      <div class="section-label">基本情報</div>
+      <div class="grid2">
+        <div class="field">
+          <label>企業名<span class="req">*</span></label>
+          <input type="text" id="company" placeholder="例：株式会社〇〇">
+        </div>
+        <div class="field">
+          <label>サイトURL<span class="req">*</span></label>
+          <input type="url" id="site_url" placeholder="例：https://example.com">
+        </div>
+        <div class="field">
+          <label>商材・サービス</label>
+          <input type="text" id="product" placeholder="例：採用管理SaaS、BtoB向け人事ツール">
+        </div>
+        <div class="field">
+          <label>サイトのKPI</label>
+          <input type="text" id="kpi" placeholder="例：月間リード50件、問い合わせCVR 2%">
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:14px">
+        <label>提案目的（複数選択可）</label>
+        <div class="check-group">
+          <label><input type="checkbox" name="purpose" value="継続・定着利用"> 継続・定着利用</label>
+          <label><input type="checkbox" name="purpose" value="アップセル"> アップセル</label>
+          <label><input type="checkbox" name="purpose" value="クロスセル"> クロスセル</label>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:14px">
+        <label>活用フェーズ <span style="font-weight:400;color:var(--muted)">（提案の方向性が切り替わります）</span></label>
+        <select id="phase">
+          <option value="">選択してください</option>
+          <option value="adopt">アダプション期：導入初期・活用が定着していない</option>
+          <option value="transition">移行期：活用は進んだが成果はこれから</option>
+          <option value="expand">エクスパンション期：活用・成果が出て拡大余地あり</option>
+        </select>
+        <span class="hint">アダプション期＝定着支援を優先／エクスパンション期＝拡大提案を優先します</span>
+      </div>
+
+      <div class="section-label">課題感・現状</div>
+      <div class="grid2">
+        <div class="field">
+          <label>現在の課題感</label>
+          <textarea id="issues" placeholder="例：KW選定に自信がない、記事を書いても流入が増えない、競合に追い抜かれている"></textarea>
+        </div>
+        <div class="field">
+          <label>直近3か月の流入KW（上位10件程度）</label>
+          <textarea id="top_kw" placeholder="例：採用管理 ツール、ATS 比較、採用 効率化 方法 …"></textarea>
+        </div>
+        <div class="field">
+          <label>運用体制</label>
+          <input type="text" id="team" placeholder="例：専任1名、外注なし、月4本ペース">
+        </div>
+        <div class="field">
+          <label>月平均 Organic トラフィック</label>
+          <input type="text" id="organic" placeholder="例：4,200 セッション">
+        </div>
+        <div class="field">
+          <label>自社 Domain Rating（DR）</label>
+          <input type="text" id="dr" placeholder="例：32">
+        </div>
+        <div class="field">
+          <label>競合メディア（1社以上）</label>
+          <input type="text" id="competitors" placeholder="例：competitor-a.com, competitor-b.com">
+        </div>
+      </div>
+
+      <div class="nav-row">
+        <div></div>
+        <button class="btn btn-primary" onclick="goTo(2)">
+          次へ：DeepResearchを実行 ›
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ STEP 2 ══════════════ -->
+  <div class="panel" id="panel2">
+    <div class="panel-head">
+      <div class="panel-num">2</div>
+      <div>
+        <div class="panel-title">DeepResearch を実行する</div>
+        <div class="panel-desc">AIにリサーチさせ、結果をここに貼り付けてください</div>
+      </div>
+    </div>
+    <div class="panel-body">
+
+      <div class="callout callout-blue">
+        <strong>DeepResearch とは？</strong><br>
+        競合・業界トレンド・AI検索の影響など、カルテに必要な外部情報をAIに調査させる作業です。<br>
+        下のプロンプトを <strong>Claude.ai（無料可）</strong> や <strong>ChatGPT</strong> に貼って実行してください。
+      </div>
+
+      <p style="font-size:13px;font-weight:700;margin-bottom:8px">① DeepResearch 用プロンプトを生成してコピー</p>
+      <button class="btn btn-outline" onclick="genResearchPrompt()" style="margin-bottom:12px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        プロンプトを生成
+      </button>
+      <textarea class="output-box" id="research_prompt_out" readonly placeholder="「プロンプトを生成」を押すとここに表示されます"></textarea>
+      <div class="btn-row" style="margin-top:10px">
+        <button class="btn btn-green" onclick="copyEl('research_prompt_out','copy1')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          プロンプトをコピー
+        </button>
+        <span class="copy-ok" id="copy1">✓ コピーしました</span>
+        <a href="https://claude.ai" target="_blank" class="btn btn-outline" style="font-size:12px">Claude.ai を開く ↗</a>
+      </div>
+
+      <div style="margin-top:24px">
+        <p style="font-size:13px;font-weight:700;margin-bottom:8px">② AIの回答をここに貼り付け</p>
+        <div class="callout callout-green" style="margin-bottom:10px">
+          <strong>貼り付け方</strong>：AIの回答をすべて選択（Ctrl+A）→ コピー → 下のエリアに貼り付けるだけでOKです。テキスト・箇条書き・Markdownどの形式でも動作します。
+        </div>
+        <textarea class="paste-box" id="deep_research" placeholder="ここにDeepResearchの回答を貼り付けてください…"></textarea>
+      </div>
+
+      <div class="nav-row">
+        <button class="btn btn-outline" onclick="goTo(1)">‹ 戻る</button>
+        <button class="btn btn-primary" onclick="goTo(3)">次へ：カルテを生成 ›</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ STEP 3 ══════════════ -->
+  <div class="panel" id="panel3">
+    <div class="panel-head">
+      <div class="panel-num">3</div>
+      <div>
+        <div class="panel-title">顧客カルテを生成</div>
+        <div class="panel-desc">このサイト内でカルテ2表が完成します（AI・アカウント不要）</div>
+      </div>
+    </div>
+    <div class="panel-body">
+
+      <div class="callout callout-green">
+        <strong>このページ上でカルテが完成します</strong><br>
+        「カルテを生成」を押すと、入力内容から <strong>顧客の現状整理</strong> と <strong>アップセル提案整理</strong> の2表をその場で作成します。Claudeアカウントは不要です。
+      </div>
+
+      <button class="btn btn-primary" onclick="genKarte()" style="margin-bottom:16px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        カルテを生成
+      </button>
+
+      <div id="karte_result" style="display:none">
+        <div class="btn-row" style="margin-top:0;margin-bottom:18px">
+          <button class="btn btn-green" onclick="copyMarkdown()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Markdownでコピー
+          </button>
+          <span class="copy-ok" id="copy2">✓ コピーしました</span>
+          <button class="btn btn-outline" onclick="window.print()" style="font-size:12px">印刷 / PDF保存</button>
+        </div>
+
+        <h3 style="font-size:15px;font-weight:700;margin:18px 0 10px;color:var(--primary)">出力1：顧客の現状整理</h3>
+        <div id="table1" class="karte-table"></div>
+
+        <h3 style="font-size:15px;font-weight:700;margin:26px 0 10px;color:var(--primary)">出力2：アップセル／クロスセル提案整理</h3>
+        <div id="table2" class="karte-table"></div>
+
+        <p style="font-size:11px;color:var(--muted);margin-top:16px">
+          ※ 本カルテは入力値とルールに基づく自動生成です。「要ヒアリング」項目は商談前に確認してください。優先度は ①顧客課題 ②運用体制 ③業界緊急度 の3軸で機械判定しています。
+        </p>
+      </div>
+
+      <div class="nav-row">
+        <button class="btn btn-outline" onclick="goTo(2)">‹ 戻る</button>
+        <div style="font-size:12px;color:var(--muted)">生成後はコピー / PDF保存で共有できます</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+// ─── Tab navigation ───
+let current = 1;
+function goTo(n) {
+  if (n === 2) genResearchPrompt();
+  current = n;
+  [1,2,3].forEach(i => {
+    document.getElementById('panel'+i).classList.toggle('visible', i===n);
+    document.getElementById('tab'+i).classList.toggle('active', i===n);
+  });
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+// ─── Helpers ───
+function v(id) { const e = document.getElementById(id); return e ? e.value.trim() : ''; }
+function checks(name) {
+  return [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(e=>e.value).join('・') || '未選択';
+}
+function orHear(val, label) { return val || `要ヒアリング：${label}`; }
+
+// ─── STEP 2: DeepResearch プロンプト生成 ───
+function genResearchPrompt() {
+  const company = v('company') || '対象企業';
+  const url     = v('site_url');
+  const product = v('product');
+  const competitors = v('competitors');
+
+  const prompt = `# DeepResearch 依頼
+
+以下の企業・サイトについて、SEO/コンテンツマーケティング商談の準備に使う調査をしてください。
+
+## 調査対象
+- 企業名：${company}
+- サイトURL：${url || '（URLは別途確認）'}
+- 商材・サービス：${product || '（入力なし）'}
+- 競合メディア：${competitors || '（入力なし）'}
+
+## 調査してほしい項目（各200〜400字で回答）
+
+### 1. 業界トレンド (industry_trends)
+- ${product || 'この業界'}における直近1〜2年の主要トレンド
+- コンテンツマーケティング・SEOにおいて注目されているテーマやキーワード群
+
+### 2. 購買行動の変化 (buyer_behavior)
+- ターゲット顧客（BtoB/BtoC）の情報収集行動の変化
+- 検索クエリの傾向（情報収集型 vs 比較検討型 vs 購買意図型）
+
+### 3. 競合の動き (competitor_moves)
+- ${competitors ? competitors + 'を中心に' : '主要競合の'}コンテンツ戦略・SEO施策の傾向
+- 競合が力を入れているキーワード・コンテンツテーマ
+
+### 4. AI検索の影響 (ai_search_impact)
+- ChatGPT・Perplexity・Google SGE 等のAI検索がこの業界の集客に与えている影響
+- 緊急度：高 / 中 / 低 で評価し、その根拠を示してください
+
+### 5. 今後の見通し (outlook)
+- 今後6〜12か月で起きそうな市場変化
+- 「今すぐSEO施策を打つべき理由（why now）」を1〜2点挙げてください
+
+---
+回答は日本語で、箇条書き・Markdown形式でお願いします。`;
+
+  const out = document.getElementById('research_prompt_out');
+  out.value = prompt;
+  out.classList.add('has-content');
+}
+
+// ─── STEP 3: 顧客カルテをサイト内で自動生成 ───
+let lastMarkdown = '';
+
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function hit(text, re) { return text ? re.test(text) : false; }
+
+// 現状メモ用：値があれば「値 [出典]」、なければ「要ヒアリング」span
+function memo(val, label, src) {
+  if (val) return { html: `${esc(val)} <span class="src">[${src}]</span>`, md: `${val} [${src}]` };
+  return { html: `<span class="hear">要ヒアリング：${esc(label)}</span>`, md: `要ヒアリング：${label}` };
+}
+
+function genKarte() {
+  const company   = v('company') || '（企業名未入力）';
+  const product   = v('product');
+  const kpi       = v('kpi');
+  const purposeArr= [...document.querySelectorAll('input[name="purpose"]:checked')].map(e=>e.value);
+  const purpose   = purposeArr.join('・') || '要ヒアリング';
+  const issues    = v('issues');
+  const top_kw    = v('top_kw');
+  const team      = v('team');
+  const organic   = v('organic');
+  const dr        = v('dr');
+  const competitors = v('competitors');
+  const research  = v('deep_research');
+  const phase     = v('phase'); // '' | 'adopt' | 'transition' | 'expand'
+
+  // ── テキスト解析（優先度・外部要因判定用） ──
+  const single   = hit(team, /専任\s*1\s*名|専任1名|1名|一人|ひとり|1人/) && !hit(team, /チーム|複数/);
+  const multi    = hit(team, /チーム|複数|数名|[2-9]\s*名/);
+  const noOut    = hit(team, /外注なし|外注無|内製/);
+  const resShort = hit(issues, /リソース|人手|時間がない|書けない|停滞|追いつ|手が回|更新でき|本数/);
+  const declHit  = hit(issues, /流入.{0,4}(減|落|伸びない|増えない)|成果.{0,4}(出ない|低下|薄)|順位.{0,4}(下が|落)|CV.{0,4}(少|減|低)/);
+  const doubtHit = hit(issues, /自信|迷|優先順位|わからない|分からない|判断|何を|どう/);
+  const compHit  = hit(issues, /競合.{0,6}(追い|負け|抜か|優位|差|遅れ)/) || hit(issues, /競合/);
+  const aiUrgent = hit(research, /AI検索|SGE|生成AI|ChatGPT|Perplexity|ゼロクリック|AI\s*Overview/) || hit(issues, /AI検索|生成AI/);
+  const compResearch = hit(research, /競合/);
+  const hasComp  = competitors.length > 0;
+  const wantUp   = purposeArr.includes('アップセル');
+
+  // ════ 出力1：現状整理 ════
+  const biz = product || kpi
+    ? memo([product && `商材：${product}`, kpi && `KPI：${kpi}`].filter(Boolean).join(' / '), '商材・KPI', '顧客カルテ')
+    : memo('', '商材・注力市場・売上目標', '顧客カルテ');
+  const bizMarket = ' / 注力市場・売上目標は要ヒアリング';
+
+  const webParts = [];
+  webParts.push(organic ? `月Organic ${organic}` : '月Organic：要ヒアリング');
+  webParts.push(dr ? `DR ${dr}` : 'DR：要ヒアリング');
+  webParts.push(top_kw ? `主要KW：${top_kw}` : '主要KW：要ヒアリング');
+  webParts.push(team ? `体制：${team}` : '運用体制：要ヒアリング');
+  const webHtml = esc(webParts.join(' / ')) + ' <span class="src">[顧客カルテ]</span>';
+  const webMd   = webParts.join(' / ') + ' [顧客カルテ]';
+
+  // 課題感：顧客課題 + 外部要因（DeepResearch）
+  let issueHtml, issueMd;
+  const base = issues ? `${issues}` : '要ヒアリング：現在の課題感';
+  let ext = '';
+  if (aiUrgent) ext = '外部要因：AI検索の影響が拡大しており対応の緊急度が高い [DeepResearch]';
+  else if (compResearch || hasComp) ext = '外部要因：競合のSEO/コンテンツ施策が活発で差をつけられるリスク [DeepResearch]';
+  else ext = '外部要因：要ヒアリング（DeepResearch未入力のため業界の外部要因を確認）';
+  issueHtml = `${esc(base)} <span class="src">[${issues?'顧客カルテ':'—'}]</span><br>${esc(ext.replace(/\s*\[.*\]$/,''))} <span class="src">[${ext.includes('要ヒアリング')?'—':'DeepResearch'}]</span>`;
+  issueMd   = `${base}${issues?' [顧客カルテ]':''} / ${ext}`;
+
+  const dm = memo('', '決裁者・現場推進者・影響者・稟議時の懸念', '顧客カルテ');
+
+  const rows1 = [
+    ['事業状況', '商材・注力市場・売上目標', biz.html + `<span class="src">${bizMarket}</span>`, biz.md + bizMarket],
+    ['Web/SEO状況', '流入・DR・主要KW・運用体制', webHtml, webMd],
+    ['課題感', '流入減・CV不足・記事停滞・競合優位・AI検索対応', issueHtml, issueMd],
+    ['意思決定者', '決裁者・現場推進者・稟議時の懸念', dm.html, dm.md],
+  ];
+
+  // ════ 出力2：提案整理（優先度ルール判定） ════
+  function P(level, reason) {
+    const cls = level==='高'?'pri-high':level==='中'?'pri-mid':'pri-low';
+    return { html: `<span class="${cls}">${level}</span>（${esc(reason)}）`, md: `${level}（${reason}）` };
+  }
+
+  // 顧客固有の値を文中に差し込むための抽出
+  const firstComp = competitors ? competitors.split(/[,、\s]+/).filter(Boolean)[0] : '';
+  const firstKw   = top_kw ? top_kw.split(/[,、\s]+/).filter(Boolean)[0] : '';
+  const issueShort= issues ? (issues.length > 24 ? issues.slice(0,24)+'…' : issues) : '';
+
+  // 1. 追加アカウント／利用範囲拡大 ― 運用体制で出し分け
+  let r1;
+  if (multi) {
+    r1 = ['複数人で運用しており、表記・品質のばらつきや承認者が成果を確認できない状態',
+          '運用者と承認者をEmmaToolsに集約し、チェック基準を統一。属人化させず複数人で品質管理',
+          P('高', '複数人運用で品質管理ニーズあり、承認者展開も見込める')];
+  } else if (single) {
+    r1 = ['運用が1名に集中し、不在時に施策が止まる属人化リスク',
+          '承認者や関連部署を巻き込み、まず1名依存から脱却する体制の足場をつくる',
+          P('低', '運用者が1名のため追加アカウントの必要性は現時点で低い')];
+  } else {
+    r1 = ['運用人数の増減で利用範囲が曖昧。誰がどこまで使うか整理されていない',
+          '利用者と権限を棚卸しし、必要人数分のアカウントで運用範囲を明確化',
+          P(wantUp?'中':'中', wantUp?'アップセル目的に合致、運用人数を要ヒアリング':'運用人数が不明のため確認が必要')];
+  }
+
+  // 2. 記事制作・リライト支援 ― 成果低下かリソース不足かで出し分け
+  let r2;
+  if (declHit) {
+    r2 = [(firstKw?`主要KW「${firstKw}」など`:'')+'既存記事の流入・順位が低下し、書いても成果が出にくい',
+          (dr?`DR${dr}の自社で、`:'')+'改善余地の大きい既存記事から優先リライトし流入を再獲得',
+          P('高', '既存記事の成果低下に直結、短期で流入改善が見込める')];
+  } else if (single || noOut || resShort) {
+    const teamDesc = single ? '専任1名' : (noOut ? '外注なしの内製体制' : '制作リソース');
+    r2 = [`${teamDesc}で制作が追いつかず、更新が滞りがち`,
+          (organic?`月Organic${organic}を底上げするため、`:'')+'制作の一部を支援し注力KWへ集中投下',
+          P('高', '制作リソースのボトルネック解消に直結')];
+  } else {
+    r2 = ['さらなる流入拡大には新規記事の量・質の上積みが必要',
+          '勝てるKW領域を見極め、成果につながる記事から計画的に制作',
+          P('中', '制作に余力がある場合は優先度は中')];
+  }
+
+  // 3. SEOコンサル／定例伴走 ― 迷い・競合・AI検索で出し分け
+  let r3;
+  if (doubtHit) {
+    r3 = [(issueShort?`施策の優先順位に迷いがある（${issueShort}）`:'施策の優先順位や打ち手が決められない'),
+          '毎月の定例でKW・競合・成果データを基に、次の一手を一緒に決定',
+          P('高', '施策判断の迷いに対し継続的な優先度整理が効く')];
+  } else if (compHit) {
+    r3 = [(firstComp?`競合（${firstComp}）に検索順位で押されつつある`:'競合に検索順位で押されつつある'),
+          '競合差分を定点観測し、勝てる領域から優先的に施策化',
+          P('高', '競合優位への対応が必要、伴走で差分を施策化')];
+  } else if (aiUrgent) {
+    r3 = ['AI検索の影響で従来のSEOだけでは流入が読みにくい',
+          'AI検索時代に合わせたコンテンツ方針を伴走しながら再設計',
+          P('高', 'AI検索など外部変化が急で継続的な方針調整が効く')];
+  } else {
+    r3 = ['施策は回っているが、優先順位づけの客観的な軸がない',
+          '業界変化と競合差分を踏まえ、施策の優先度を継続的に整理',
+          P('中', '施策方針が定まっていれば優先度は中')];
+  }
+
+  // 4. レポート／競合モニタリング ― 競合状況で出し分け
+  let r4;
+  if (compHit || (hasComp && compResearch)) {
+    r4 = [(firstComp?`競合（${firstComp}）の新規KW・順位変動を定期的に追えていない`:'競合の動向を定期的に追えていない'),
+          '競合の新規KW・順位変動を月次で可視化し、先手で対策を打つ',
+          P('高', '競合動向の継続把握ニーズが高く先手施策につながる')];
+  } else if (hasComp) {
+    r4 = ['競合は把握しているが、変化を定点観測する仕組みがない',
+          '主要競合の動きを月次レポート化し、施策判断のインプットにする',
+          P('中', '競合は把握済みだがモニタリング定例化の余地あり')];
+  } else {
+    r4 = ['自社・市場のKW変動を継続的に把握できていない',
+          '市場とKWの変化を定例で可視化し、機会を逃さない状態にする',
+          P('低', '競合メディア未入力のため必要性が判断できない')];
+  }
+
+  const rows2 = [
+    ['追加アカウント／利用範囲拡大', r1[0], r1[1], r1[2]],
+    ['記事制作・リライト支援',       r2[0], r2[1], r2[2]],
+    ['SEOコンサル／定例伴走',         r3[0], r3[1], r3[2]],
+    ['レポート／競合モニタリング',   r4[0], r4[1], r4[2]],
+  ];
+
+  // ── 活用フェーズで優先度を組み替え（アダプション⇄エクスパンション） ──
+  // 兼任・低リテラシー顧客が多い前提：定着前に拡大提案を出さない
+  let phaseLabel = '';
+  if (phase === 'adopt') {
+    phaseLabel = 'アダプション期（定着支援を優先）';
+    rows2[0][3] = P('低', '定着前は利用者を増やすより活用の浸透が先');
+    rows2[1][3] = P('高', 'まず制作代行で初期の成功体験をつくり定着を促す');
+    rows2[2][3] = P('高', 'オンボーディング伴走で活用を軌道に乗せる');
+    rows2[3][3] = P('中', '成果報告より先に基本活用の定着を優先');
+  } else if (phase === 'expand') {
+    phaseLabel = 'エクスパンション期（拡大提案を優先）';
+    rows2[0][3] = P('高', '成果が出ており他部署・他事業への横展開余地が大きい');
+    rows2[1][3] = P((declHit||resShort)?'高':'中', '成果の出たKW群を横展開し更なる流入拡大を狙える');
+    rows2[2][3] = P('中', '自走できていれば戦略レベルの伴走に絞れる');
+    rows2[3][3] = P('高', '拡大維持には競合先回りと成果の可視化が効く');
+  } else if (phase === 'transition') {
+    phaseLabel = '移行期（成果づくりを優先・シグナル判定）';
+  }
+
+  // ── HTMLテーブル描画 ──
+  let t1 = '<table><thead><tr><th>観点</th><th>確認内容</th><th>現状メモ</th></tr></thead><tbody>';
+  rows1.forEach(r => { t1 += `<tr><td>${r[0]}</td><td>${esc(r[1])}</td><td>${r[2]}</td></tr>`; });
+  t1 += '</tbody></table>';
+  document.getElementById('table1').innerHTML = t1;
+
+  let t2 = phaseLabel ? `<p style="font-size:12px;margin-bottom:8px"><span class="tag">フェーズ</span> ${esc(phaseLabel)}</p>` : '';
+  t2 += '<table><thead><tr><th>提案候補</th><th>刺さる顧客課題</th><th>提案ストーリー</th><th>優先度</th></tr></thead><tbody>';
+  rows2.forEach(r => { t2 += `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td><td>${r[3].html}</td></tr>`; });
+  t2 += '</tbody></table>';
+  document.getElementById('table2').innerHTML = t2;
+
+  // ── Markdown生成（コピー用） ──
+  let md = `# 顧客カルテ：${company}\n（提案目的：${purpose}${phaseLabel?` ／ ${phaseLabel}`:''}）\n\n## 出力1：顧客の現状整理\n`;
+  md += `| 観点 | 確認内容 | 現状メモ |\n|------|----------|----------|\n`;
+  rows1.forEach(r => { md += `| ${r[0]} | ${r[1]} | ${r[3].replace(/\n/g,' ')} |\n`; });
+  md += `\n## 出力2：アップセル／クロスセル提案整理\n`;
+  md += `| 提案候補 | 刺さる顧客課題 | 提案ストーリー | 優先度 |\n|----------|----------------|----------------|--------|\n`;
+  rows2.forEach(r => { md += `| ${r[0]} | ${r[1]} | ${r[2]} | ${r[3].md} |\n`; });
+  lastMarkdown = md;
+
+  document.getElementById('karte_result').style.display = 'block';
+}
+
+function copyMarkdown() {
+  if (!lastMarkdown) return;
+  navigator.clipboard.writeText(lastMarkdown).then(() => showCopied('copy2'))
+    .catch(() => { const t=document.createElement('textarea'); t.value=lastMarkdown; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); showCopied('copy2'); });
+}
+
+// ─── Copy (DeepResearch prompt) ───
+function copyEl(id, statusId) {
+  const el = document.getElementById(id);
+  if (!el.value || el.value.startsWith('「プロンプト')) return;
+  navigator.clipboard.writeText(el.value).then(() => showCopied(statusId))
+    .catch(() => { el.select(); document.execCommand('copy'); showCopied(statusId); });
+}
+function showCopied(id) {
+  const s = document.getElementById(id);
+  s.style.display = 'inline';
+  setTimeout(() => { s.style.display = 'none'; }, 2500);
+}
+</script>
+</body>
+</html>

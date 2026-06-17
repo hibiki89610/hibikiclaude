@@ -3,6 +3,20 @@
 Claude Codeを使った半自動の記事レビュー＆自動修正システムです。
 **ファクトチェック機能**も搭載し、記事の信頼性を高めます。
 
+## 顧客カルテ生成ツール（EmmaTools CS向け）
+
+`index.html` は、CS商談の準備カルテをブラウザだけで作成できる単体ツールです。
+Claudeアカウント不要で、入力→DeepResearch→カルテ生成（2表）まで完結します。
+
+GitHub Pages を有効化すると以下のURLで全員が利用できます（リポジトリは public）：
+
+```
+https://hibiki89610.github.io/hibikiclaude/
+```
+
+**公開手順**: PR をマージ → Settings → Pages → Source を「Deploy from a branch」、
+ブランチ + `/ (root)` を指定して Save。1〜2分でURLが発行されます。
+
 ## ディレクトリ構成
 
 ```
