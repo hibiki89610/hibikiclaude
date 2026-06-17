@@ -185,6 +185,17 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Segoe U
         </div>
       </div>
 
+      <div class="field" style="margin-top:14px">
+        <label>活用フェーズ <span style="font-weight:400;color:var(--muted)">（提案の方向性が切り替わります）</span></label>
+        <select id="phase">
+          <option value="">選択してください</option>
+          <option value="adopt">アダプション期：導入初期・活用が定着していない</option>
+          <option value="transition">移行期：活用は進んだが成果はこれから</option>
+          <option value="expand">エクスパンション期：活用・成果が出て拡大余地あり</option>
+        </select>
+        <span class="hint">アダプション期＝定着支援を優先／エクスパンション期＝拡大提案を優先します</span>
+      </div>
+
       <div class="section-label">課題感・現状</div>
       <div class="grid2">
         <div class="field">
@@ -412,6 +423,7 @@ function genKarte() {
   const dr        = v('dr');
   const competitors = v('competitors');
   const research  = v('deep_research');
+  const phase     = v('phase'); // '' | 'adopt' | 'transition' | 'expand'
 
   // ── テキスト解析（優先度・外部要因判定用） ──
   const single   = hit(team, /専任\s*1\s*名|専任1名|1名|一人|ひとり|1人/) && !hit(team, /チーム|複数/);
@@ -546,19 +558,39 @@ function genKarte() {
     ['レポート／競合モニタリング',   r4[0], r4[1], r4[2]],
   ];
 
+  // ── 活用フェーズで優先度を組み替え（アダプション⇄エクスパンション） ──
+  // 兼任・低リテラシー顧客が多い前提：定着前に拡大提案を出さない
+  let phaseLabel = '';
+  if (phase === 'adopt') {
+    phaseLabel = 'アダプション期（定着支援を優先）';
+    rows2[0][3] = P('低', '定着前は利用者を増やすより活用の浸透が先');
+    rows2[1][3] = P('高', 'まず制作代行で初期の成功体験をつくり定着を促す');
+    rows2[2][3] = P('高', 'オンボーディング伴走で活用を軌道に乗せる');
+    rows2[3][3] = P('中', '成果報告より先に基本活用の定着を優先');
+  } else if (phase === 'expand') {
+    phaseLabel = 'エクスパンション期（拡大提案を優先）';
+    rows2[0][3] = P('高', '成果が出ており他部署・他事業への横展開余地が大きい');
+    rows2[1][3] = P((declHit||resShort)?'高':'中', '成果の出たKW群を横展開し更なる流入拡大を狙える');
+    rows2[2][3] = P('中', '自走できていれば戦略レベルの伴走に絞れる');
+    rows2[3][3] = P('高', '拡大維持には競合先回りと成果の可視化が効く');
+  } else if (phase === 'transition') {
+    phaseLabel = '移行期（成果づくりを優先・シグナル判定）';
+  }
+
   // ── HTMLテーブル描画 ──
   let t1 = '<table><thead><tr><th>観点</th><th>確認内容</th><th>現状メモ</th></tr></thead><tbody>';
   rows1.forEach(r => { t1 += `<tr><td>${r[0]}</td><td>${esc(r[1])}</td><td>${r[2]}</td></tr>`; });
   t1 += '</tbody></table>';
   document.getElementById('table1').innerHTML = t1;
 
-  let t2 = '<table><thead><tr><th>提案候補</th><th>刺さる顧客課題</th><th>提案ストーリー</th><th>優先度</th></tr></thead><tbody>';
+  let t2 = phaseLabel ? `<p style="font-size:12px;margin-bottom:8px"><span class="tag">フェーズ</span> ${esc(phaseLabel)}</p>` : '';
+  t2 += '<table><thead><tr><th>提案候補</th><th>刺さる顧客課題</th><th>提案ストーリー</th><th>優先度</th></tr></thead><tbody>';
   rows2.forEach(r => { t2 += `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td><td>${r[3].html}</td></tr>`; });
   t2 += '</tbody></table>';
   document.getElementById('table2').innerHTML = t2;
 
   // ── Markdown生成（コピー用） ──
-  let md = `# 顧客カルテ：${company}\n（提案目的：${purpose}）\n\n## 出力1：顧客の現状整理\n`;
+  let md = `# 顧客カルテ：${company}\n（提案目的：${purpose}${phaseLabel?` ／ ${phaseLabel}`:''}）\n\n## 出力1：顧客の現状整理\n`;
   md += `| 観点 | 確認内容 | 現状メモ |\n|------|----------|----------|\n`;
   rows1.forEach(r => { md += `| ${r[0]} | ${r[1]} | ${r[3].replace(/\n/g,' ')} |\n`; });
   md += `\n## 出力2：アップセル／クロスセル提案整理\n`;
