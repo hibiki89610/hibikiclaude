@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EmmaTools 顧客カルテ プロンプト生成ツール</title>
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --text: #1e293b;
+    --muted: #64748b;
+    --accent: #f0f9ff;
+    --tag: #dbeafe;
+    --success: #16a34a;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; }
+  .header { background: var(--primary); color: white; padding: 18px 24px; display: flex; align-items: center; gap: 12px; }
+  .header h1 { font-size: 18px; font-weight: 700; }
+  .header .sub { font-size: 12px; opacity: 0.8; }
+  .badge { background: rgba(255,255,255,0.2); border-radius: 4px; padding: 2px 8px; font-size: 11px; }
+  .container { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
+  .step { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 20px; overflow: hidden; }
+  .step-header { background: var(--accent); border-bottom: 1px solid var(--border); padding: 12px 18px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  .step-num { background: var(--primary); color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+  .step-title { font-weight: 600; font-size: 15px; }
+  .step-desc { font-size: 12px; color: var(--muted); margin-left: auto; }
+  .step-body { padding: 18px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  @media (max-width: 600px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; font-weight: 600; color: var(--muted); }
+  .field label .req { color: #ef4444; margin-left: 2px; }
+  .field input, .field select, .field textarea {
+    border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; font-size: 13px;
+    font-family: inherit; color: var(--text); background: var(--surface); transition: border 0.15s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--primary); }
+  .field textarea { resize: vertical; min-height: 72px; }
+  .separator { height: 1px; background: var(--border); margin: 14px 0; }
+  .section-label { font-size: 11px; font-weight: 700; color: var(--primary); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 10px; }
+  .hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .paste-area { width: 100%; border: 1px dashed var(--border); border-radius: 8px; padding: 12px; font-size: 12px; font-family: 'Courier New', monospace; min-height: 160px; resize: vertical; background: #fafafa; }
+  .paste-area:focus { outline: none; border-color: var(--primary); border-style: solid; background: var(--surface); }
+  .output-area { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 14px; font-size: 12px; font-family: 'Courier New', monospace; min-height: 200px; resize: vertical; background: #0f172a; color: #e2e8f0; line-height: 1.7; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: var(--primary-hover); }
+  .btn-success { background: var(--success); color: white; }
+  .btn-success:hover { background: #15803d; }
+  .btn-outline { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
+  .btn-outline:hover { background: var(--accent); }
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 16px; }
+  .copy-status { font-size: 12px; color: var(--success); display: none; }
+  .notice { background: #fefce8; border: 1px solid #fde68a; border-radius: 8px; padding: 12px 14px; font-size: 12px; color: #92400e; margin-bottom: 16px; }
+  .notice strong { display: block; margin-bottom: 4px; }
+  .tag { display: inline-block; background: var(--tag); color: var(--primary); border-radius: 4px; padding: 1px 6px; font-size: 11px; font-weight: 600; margin-right: 4px; }
+  .radio-group { display: flex; gap: 14px; flex-wrap: wrap; }
+  .radio-group label { display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 400; color: var(--text); cursor: pointer; }
+  .radio-group input[type=radio] { accent-color: var(--primary); }
+  .collapse-arrow { margin-left: auto; transition: transform 0.2s; }
+  .step.collapsed .step-body { display: none; }
+  .step.collapsed .collapse-arrow { transform: rotate(-90deg); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <h1>EmmaTools 顧客カルテ生成ツール</h1>
+      <span class="badge">CS用</span>
+    </div>
+    <div class="sub">基本情報とDeepResearch結果を入力 → AIへ貼るプロンプトを自動生成</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="notice">
+    <strong>使い方（3ステップ）</strong>
+    <span class="tag">STEP 1</span> 顧客基本情報を入力 &nbsp;
+    <span class="tag">STEP 2</span> DeepResearch結果を貼り付け &nbsp;
+    <span class="tag">STEP 3</span> プロンプトを生成 → Claude / ChatGPT 等に貼り付け
+    <br><br>※ Claudeアカウント・ファイル不要。ブラウザだけで動作します。
+  </div>
+
+  <!-- STEP 1: 基本情報 -->
+  <div class="step" id="step1">
+    <div class="step-header" onclick="toggleStep('step1')">
+      <div class="step-num">1</div>
+      <div class="step-title">顧客基本情報（/karte 情報）</div>
+      <div class="step-desc">顧客カルテの内容を入力してください</div>
+      <svg class="collapse-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="step-body">
+
+      <div class="section-label">基本情報</div>
+      <div class="grid2">
+        <div class="field">
+          <label>顧客名（会社名）<span class="req">*</span></label>
+          <input type="text" id="company" placeholder="例：株式会社〇〇">
+        </div>
+        <div class="field">
+          <label>業種</label>
+          <input type="text" id="industry" placeholder="例：BtoB SaaS、人材、不動産など">
+        </div>
+        <div class="field">
+          <label>担当者名</label>
+          <input type="text" id="contact" placeholder="例：田中様">
+        </div>
+        <div class="field">
+          <label>役職</label>
+          <input type="text" id="position" placeholder="例：マーケティング部長">
+        </div>
+      </div>
+
+      <div class="separator"></div>
+      <div class="section-label">事業状況</div>
+      <div class="grid2">
+        <div class="field">
+          <label>伸ばしたい事業・商材</label>
+          <input type="text" id="biz_focus" placeholder="例：採用管理SaaSの新プラン">
+        </div>
+        <div class="field">
+          <label>注力市場・ターゲット</label>
+          <input type="text" id="biz_market" placeholder="例：中小企業向け、製造業">
+        </div>
+        <div class="field">
+          <label>売上目標・KPI</label>
+          <input type="text" id="biz_goal" placeholder="例：リード月50件、MRR+20%（不明なら空欄）">
+        </div>
+        <div class="field">
+          <label>EmmaTools契約プラン</label>
+          <input type="text" id="plan" placeholder="例：スタンダード、エンタープライズ">
+        </div>
+      </div>
+
+      <div class="separator"></div>
+      <div class="section-label">Web / SEO 状況</div>
+      <div class="grid3">
+        <div class="field">
+          <label>DR（Domain Rating）</label>
+          <input type="text" id="ahrefs_dr" placeholder="例：32">
+        </div>
+        <div class="field">
+          <label>月間オーガニックトラフィック</label>
+          <input type="text" id="ahrefs_traffic" placeholder="例：4,200">
+        </div>
+        <div class="field">
+          <label>主要キーワード（上位3つ程度）</label>
+          <input type="text" id="ahrefs_kw" placeholder="例：採用管理 ツール、ATS 比較">
+        </div>
+        <div class="field">
+          <label>記事本数</label>
+          <input type="text" id="articles_count" placeholder="例：120記事（不明なら空欄）">
+        </div>
+        <div class="field">
+          <label>更新頻度</label>
+          <input type="text" id="publish_freq" placeholder="例：月4本（不明なら空欄）">
+        </div>
+        <div class="field">
+          <label>月間CV数</label>
+          <input type="text" id="cv" placeholder="例：問い合わせ15件（不明なら空欄）">
+        </div>
+      </div>
+      <div class="field" style="margin-top:12px">
+        <label>競合サイトURL（カンマ区切り）</label>
+        <input type="text" id="competitors" placeholder="例：competitor-a.com, competitor-b.com">
+      </div>
+
+      <div class="separator"></div>
+      <div class="section-label">運用体制</div>
+      <div class="grid2">
+        <div class="field">
+          <label>SEO担当体制</label>
+          <div class="radio-group">
+            <label><input type="radio" name="team_type" value="専任1名"> 専任1名</label>
+            <label><input type="radio" name="team_type" value="兼務"> 兼務</label>
+            <label><input type="radio" name="team_type" value="チーム複数名"> チーム複数名</label>
+            <label><input type="radio" name="team_type" value="不明"> 不明</label>
+          </div>
+        </div>
+        <div class="field">
+          <label>外注有無</label>
+          <div class="radio-group">
+            <label><input type="radio" name="outsource" value="外注あり"> 外注あり</label>
+            <label><input type="radio" name="outsource" value="外注なし"> 外注なし</label>
+            <label><input type="radio" name="outsource" value="不明"> 不明</label>
+          </div>
+        </div>
+        <div class="field">
+          <label>制作リソース・承認フロー</label>
+          <input type="text" id="resource" placeholder="例：社内ライター1名、承認は部長経由">
+        </div>
+        <div class="field">
+          <label>EmmaTools利用頻度・活用状況</label>
+          <input type="text" id="usage" placeholder="例：週2〜3回、KW調査メインで活用">
+        </div>
+      </div>
+
+      <div class="separator"></div>
+      <div class="section-label">課題・意思決定</div>
+      <div class="grid2">
+        <div class="field">
+          <label>顧客が感じている課題</label>
+          <textarea id="issues" placeholder="例：KW選定に自信がない、記事を書いても流入が増えない、競合に追い抜かれている"></textarea>
+        </div>
+        <div class="field">
+          <label>意思決定者情報</label>
+          <textarea id="decision_maker" placeholder="例：決裁者は代表、現場推進は田中様。稟議時はROIエビデンスが必要（不明なら空欄）"></textarea>
+        </div>
+      </div>
+      <div class="field">
+        <label>その他・特記事項</label>
+        <textarea id="notes" placeholder="例：契約更新は3か月後、競合他社ツールも検討中" style="min-height:56px"></textarea>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- STEP 2: DeepResearch -->
+  <div class="step" id="step2">
+    <div class="step-header" onclick="toggleStep('step2')">
+      <div class="step-num">2</div>
+      <div class="step-title">DeepResearch 結果を貼り付け</div>
+      <div class="step-desc">Claude / Perplexity 等の調査結果をそのままペースト</div>
+      <svg class="collapse-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="step-body">
+      <p class="hint" style="margin-bottom:10px">業界トレンド・競合動向・AI検索影響・購買行動等のリサーチ結果をそのまま貼ってください。JSON・テキスト・箇条書き、どの形式でもOKです。</p>
+      <textarea class="paste-area" id="deep_research" placeholder="ここにDeepResearch結果を貼り付けてください...
+
+例）
+## 業界トレンド
+- ...
+
+## 競合の動き
+- ...
+
+## AI検索の影響
+- ...
+
+## 見通し
+- ..."></textarea>
+      <p class="hint">※ 空欄の場合は「要ヒアリング」として処理されます</p>
+    </div>
+  </div>
+
+  <!-- STEP 3: 生成 -->
+  <div class="step" id="step3">
+    <div class="step-header" onclick="toggleStep('step3')">
+      <div class="step-num">3</div>
+      <div class="step-title">プロンプト生成 → AIへ貼り付け</div>
+      <div class="step-desc">Claude.ai / ChatGPT 等に貼るだけでカルテ完成</div>
+      <svg class="collapse-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="step-body">
+      <div class="btn-row" style="margin-top:0;margin-bottom:16px">
+        <button class="btn btn-primary" onclick="generatePrompt()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          プロンプトを生成
+        </button>
+        <button class="btn btn-success" onclick="copyPrompt()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          コピー
+        </button>
+        <span class="copy-status" id="copyStatus">✓ コピーしました</span>
+        <div style="margin-left:auto;font-size:12px;color:var(--muted)">
+          生成後、Claude.ai / ChatGPT / Gemini 等に貼り付けてください
+        </div>
+      </div>
+      <textarea class="output-area" id="output" readonly placeholder="「プロンプトを生成」ボタンを押すと、ここにAIへ貼り付けるプロンプトが表示されます。"></textarea>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function toggleStep(id) {
+  document.getElementById(id).classList.toggle('collapsed');
+}
+
+function val(id) {
+  const el = document.getElementById(id);
+  return el ? el.value.trim() : '';
+}
+
+function radio(name) {
+  const checked = document.querySelector(`input[name="${name}"]:checked`);
+  return checked ? checked.value : '';
+}
+
+function orHear(v, label) {
+  return v || `要ヒアリング：${label}`;
+}
+
+function generatePrompt() {
+  const company       = val('company') || '（顧客名未入力）';
+  const industry      = val('industry');
+  const contact       = val('contact');
+  const position      = val('position');
+  const biz_focus     = val('biz_focus');
+  const biz_market    = val('biz_market');
+  const biz_goal      = val('biz_goal');
+  const plan          = val('plan');
+  const ahrefs_dr     = val('ahrefs_dr');
+  const ahrefs_traffic= val('ahrefs_traffic');
+  const ahrefs_kw     = val('ahrefs_kw');
+  const articles_count= val('articles_count');
+  const publish_freq  = val('publish_freq');
+  const cv            = val('cv');
+  const competitors   = val('competitors');
+  const team_type     = radio('team_type');
+  const outsource     = radio('outsource');
+  const resource      = val('resource');
+  const usage         = val('usage');
+  const issues        = val('issues');
+  const decision_maker= val('decision_maker');
+  const notes         = val('notes');
+  const deep_research = val('deep_research');
+
+  const karteBlock = `【顧客カルテ (input.md 相当)】
+---
+## 基本情報
+- 顧客名：${company}
+- 業種：${industry || '要ヒアリング'}
+- 担当者：${contact || '要ヒアリング'}（${position || '役職不明'}）
+- 契約プラン：${plan || '要ヒアリング'}
+
+## 事業状況
+- 伸ばしたい事業・商材：${orHear(biz_focus, '伸ばしたい事業・商材')}
+- 注力市場・ターゲット：${orHear(biz_market, '注力市場')}
+- 売上目標・KPI：${orHear(biz_goal, '売上目標・KPI')}
+
+## Web / SEO 状況（Ahrefsデータ）
+- DR（Domain Rating）：${orHear(ahrefs_dr, 'DR')}
+- 月間オーガニックトラフィック：${orHear(ahrefs_traffic, '月間オーガニックトラフィック')}
+- 主要キーワード：${orHear(ahrefs_kw, '主要キーワード')}
+- 記事本数：${orHear(articles_count, '記事本数')}
+- 更新頻度：${orHear(publish_freq, '更新頻度')}
+- 月間CV数：${orHear(cv, 'CV数')}
+- 競合サイトURL：${competitors || '要ヒアリング'}
+
+## 運用体制
+- 担当体制：${orHear(team_type, '担当体制（専任/兼務等）')}
+- 外注有無：${orHear(outsource, '外注有無')}
+- 制作リソース・承認フロー：${orHear(resource, '制作リソース・承認フロー')}
+- EmmaTools活用状況：${orHear(usage, 'EmmaTools活用状況・利用頻度')}
+
+## 課題感
+${issues || '要ヒアリング：顧客が感じている課題（流入減・CV不足・記事制作停滞・競合優位・AI検索対応など）'}
+
+## 意思決定者
+${decision_maker || '要ヒアリング：決裁者・現場推進者・影響者・稟議時の懸念'}
+
+## 特記事項
+${notes || 'なし'}
+---`;
+
+  const researchBlock = deep_research
+    ? `【DeepResearch結果 (research.json 相当)】\n---\n${deep_research}\n---`
+    : `【DeepResearch結果】\n---\n（未入力）業界リサーチ情報がないため、research.json 関連の分析は「要ヒアリング」または一般的な傾向として補完してください。\n---`;
+
+  const systemPrompt = `# 役割
+あなたはSEO/コンテンツマーケティングSaaS「EmmaTools」のカスタマーサクセス担当者です。
+既存顧客との商談（提案目的：継続・利用定着・アップセル）に向けた、社内用の準備資料を作成します。
+
+# タスク
+下記の【顧客カルテ】と【DeepResearch結果】を統合し、以下2つの表を日本語のMarkdown表で出力してください。
+
+## 出力1：顧客の現状整理
+列は「観点 / 確認内容 / 現状メモ」。確認内容は固定。現状メモを埋める。
+| 観点 | 確認内容 | 現状メモ |
+|------|----------|----------|
+| 事業状況 | 伸ばしたい事業・商材、注力市場、売上目標 | |
+| Web/SEO状況 | 現在の流入・CV・主要KW・記事本数・更新頻度 | |
+| 運用体制 | 専任/兼務、外注有無、制作リソース、承認フロー | |
+| 課題感 | 流入減、CV不足、記事制作停滞、競合優位、AI検索対応など | |
+| 意思決定者 | 決裁者、現場推進者、影響者、稟議時の懸念 | |
+
+## 出力2：アップセル / クロスセル提案整理
+列は「提案候補 / 刺さる顧客課題 / 提案ストーリー / 優先度」。
+| 提案候補 | 刺さる顧客課題 | 提案ストーリー | 優先度 |
+|----------|----------------|----------------|--------|
+| 追加アカウント / 利用範囲拡大 | 社内運用者が増えている、承認者も確認したい | 運用を属人化させず、複数人で品質管理できる体制へ | |
+| 記事制作・リライト支援 | 制作リソース不足、既存記事の成果低下 | 短期で改善余地の大きい記事から、流入・CVの再獲得を狙う | |
+| SEOコンサル / 定例伴走 | 施策判断に迷いがある、優先順位が決められない | 業界変化と競合差分を踏まえ、施策優先度を継続的に整理する | |
+| レポート / 競合モニタリング | 競合動向を定期的に追えていない | 市場変化を定例で可視化し、先手で施策を打てる状態にする | |
+
+# セルの埋め方ルール（厳守）
+1. 現状メモは【顧客カルテ】と【DeepResearch結果】の記載に基づく事実ベースで書く。
+   - 各記述の末尾に根拠を [顧客カルテ] / [DeepResearch:該当箇所] の形で1つ添える。
+2. インプットに記載がない項目は、推測で埋めず「要ヒアリング：〜」と明記する。
+3. Web/SEO状況にはAhrefsの数値（DR・月間オーガニックトラフィック・主要KW）を必ず転記する。
+4. 課題感には顧客カルテの課題に加え、DeepResearchのAI検索影響・競合の動きから「対応すべき外部要因」を1つ補う。
+5. 優先度（高/中/低）は下記3軸で判定し、理由を1行添える。
+   - A. 顧客の課題感との合致度
+   - B. 運用体制ボトルネック解消につながるか（専任1名なら制作・伴走系が効きやすく、追加アカウントは効きにくい等）
+   - C. DeepResearchが示す業界の緊急度との整合
+
+# 出力形式
+- 上記2表のみをMarkdownで出力。前置き・後書き・コードブロックは不要。
+- 現状メモ・提案ストーリーは各100字以内。
+
+---
+
+${karteBlock}
+
+${researchBlock}`;
+
+  document.getElementById('output').value = systemPrompt;
+  document.getElementById('step3').classList.remove('collapsed');
+  document.getElementById('step3').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function copyPrompt() {
+  const output = document.getElementById('output');
+  if (!output.value || output.value.startsWith('「プロンプトを生成」')) {
+    generatePrompt();
+  }
+  navigator.clipboard.writeText(output.value).then(() => {
+    const status = document.getElementById('copyStatus');
+    status.style.display = 'inline';
+    setTimeout(() => { status.style.display = 'none'; }, 2500);
+  }).catch(() => {
+    output.select();
+    document.execCommand('copy');
+  });
+}
+</script>
+</body>
+</html>
