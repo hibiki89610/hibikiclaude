@@ -102,6 +102,22 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Segoe U
 
 /* ─── Nav buttons ─── */
 .nav-row { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--border); }
+
+/* ─── Karte tables ─── */
+.karte-table table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.karte-table th, .karte-table td { border: 1px solid var(--border); padding: 9px 11px; text-align: left; vertical-align: top; }
+.karte-table th { background: var(--primary-light); color: var(--primary); font-weight: 700; white-space: nowrap; }
+.karte-table td:first-child { font-weight: 600; white-space: nowrap; background: #f8fafc; }
+.karte-table .pri-high { color: var(--green); font-weight: 700; }
+.karte-table .pri-mid  { color: var(--orange); font-weight: 700; }
+.karte-table .pri-low  { color: var(--muted); font-weight: 700; }
+.karte-table .hear { color: var(--orange); }
+.src { color: var(--muted); font-size: 11px; }
+@media print {
+  .header, .flow, .btn-row, .nav-row, .callout { display: none !important; }
+  .panel { box-shadow: none; border: none; }
+  body { background: #fff; }
+}
 </style>
 </head>
 <body>
@@ -123,7 +139,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Segoe U
   </div>
   <div class="flow-arrow">›</div>
   <div class="flow-step" id="tab3" onclick="goTo(3)">
-    <div class="num">3</div>カルテプロンプトを生成
+    <div class="num">3</div>カルテを生成
   </div>
 </div>
 
@@ -248,7 +264,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Segoe U
 
       <div class="nav-row">
         <button class="btn btn-outline" onclick="goTo(1)">‹ 戻る</button>
-        <button class="btn btn-primary" onclick="goTo(3)">次へ：カルテプロンプトを生成 ›</button>
+        <button class="btn btn-primary" onclick="goTo(3)">次へ：カルテを生成 ›</button>
       </div>
     </div>
   </div>
@@ -258,38 +274,46 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Segoe U
     <div class="panel-head">
       <div class="panel-num">3</div>
       <div>
-        <div class="panel-title">顧客カルテ プロンプトを生成</div>
-        <div class="panel-desc">生成したプロンプトをAIに貼り付けると、カルテ2表が完成します</div>
+        <div class="panel-title">顧客カルテを生成</div>
+        <div class="panel-desc">このサイト内でカルテ2表が完成します（AI・アカウント不要）</div>
       </div>
     </div>
     <div class="panel-body">
 
-      <div class="callout callout-orange">
-        <strong>どこで顧客カルテを作るか</strong>
-        <ol>
-          <li>下の「プロンプトを生成」ボタンを押す</li>
-          <li>「コピー」して <strong>Claude.ai</strong>（無料）や <strong>ChatGPT</strong> に貼り付ける</li>
-          <li>AIが「顧客の現状整理」と「アップセル提案整理」の2表を出力してくれます</li>
-        </ol>
+      <div class="callout callout-green">
+        <strong>このページ上でカルテが完成します</strong><br>
+        「カルテを生成」を押すと、入力内容から <strong>顧客の現状整理</strong> と <strong>アップセル提案整理</strong> の2表をその場で作成します。Claudeアカウントは不要です。
       </div>
 
-      <button class="btn btn-primary" onclick="genKartePrompt()" style="margin-bottom:12px">
+      <button class="btn btn-primary" onclick="genKarte()" style="margin-bottom:16px">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-        顧客カルテ プロンプトを生成
+        カルテを生成
       </button>
-      <textarea class="output-box" id="karte_out" readonly placeholder="「プロンプトを生成」を押すとここに表示されます"></textarea>
-      <div class="btn-row">
-        <button class="btn btn-green" onclick="copyEl('karte_out','copy2')">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-          プロンプトをコピー
-        </button>
-        <span class="copy-ok" id="copy2">✓ コピーしました</span>
-        <a href="https://claude.ai" target="_blank" class="btn btn-outline" style="font-size:12px">Claude.ai を開く ↗</a>
+
+      <div id="karte_result" style="display:none">
+        <div class="btn-row" style="margin-top:0;margin-bottom:18px">
+          <button class="btn btn-green" onclick="copyMarkdown()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Markdownでコピー
+          </button>
+          <span class="copy-ok" id="copy2">✓ コピーしました</span>
+          <button class="btn btn-outline" onclick="window.print()" style="font-size:12px">印刷 / PDF保存</button>
+        </div>
+
+        <h3 style="font-size:15px;font-weight:700;margin:18px 0 10px;color:var(--primary)">出力1：顧客の現状整理</h3>
+        <div id="table1" class="karte-table"></div>
+
+        <h3 style="font-size:15px;font-weight:700;margin:26px 0 10px;color:var(--primary)">出力2：アップセル／クロスセル提案整理</h3>
+        <div id="table2" class="karte-table"></div>
+
+        <p style="font-size:11px;color:var(--muted);margin-top:16px">
+          ※ 本カルテは入力値とルールに基づく自動生成です。「要ヒアリング」項目は商談前に確認してください。優先度は ①顧客課題 ②運用体制 ③業界緊急度 の3軸で機械判定しています。
+        </p>
       </div>
 
       <div class="nav-row">
         <button class="btn btn-outline" onclick="goTo(2)">‹ 戻る</button>
-        <div style="font-size:12px;color:var(--muted)">コピーしてAIに貼り付けてください</div>
+        <div style="font-size:12px;color:var(--muted)">生成後はコピー / PDF保存で共有できます</div>
       </div>
     </div>
   </div>
@@ -301,7 +325,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Segoe U
 let current = 1;
 function goTo(n) {
   if (n === 2) genResearchPrompt();
-  if (n === 3) genKartePrompt();
   current = n;
   [1,2,3].forEach(i => {
     document.getElementById('panel'+i).classList.toggle('visible', i===n);
@@ -364,88 +387,148 @@ function genResearchPrompt() {
   out.classList.add('has-content');
 }
 
-// ─── STEP 3: 顧客カルテ プロンプト生成 ───
-function genKartePrompt() {
-  const company    = v('company') || '（未入力）';
-  const site_url   = v('site_url');
-  const product    = v('product');
-  const kpi        = v('kpi');
-  const purpose    = checks('purpose');
-  const issues     = v('issues');
-  const top_kw     = v('top_kw');
-  const team       = v('team');
-  const organic    = v('organic');
-  const dr         = v('dr');
-  const competitors= v('competitors');
-  const research   = v('deep_research');
+// ─── STEP 3: 顧客カルテをサイト内で自動生成 ───
+let lastMarkdown = '';
 
-  const karte = `【顧客カルテ】
----
-企業名：${company}
-サイトURL：${site_url || '要ヒアリング'}
-商材・サービス：${orHear(product,'商材・サービス')}
-提案目的：${purpose}
-サイトKPI：${orHear(kpi,'KPI・目標数値')}
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function hit(text, re) { return text ? re.test(text) : false; }
 
-■ 課題感・現状
-- 現在の課題感：${orHear(issues,'現在の課題感')}
-- 直近3か月の流入KW：${orHear(top_kw,'流入キーワード上位10件')}
-- 運用体制：${orHear(team,'担当体制・外注有無・制作ペース')}
-- 月平均 Organic トラフィック：${orHear(organic,'月平均オーガニックトラフィック')}
-- 自社 Domain Rating（DR）：${orHear(dr,'DR')}
-- 競合メディア：${orHear(competitors,'競合メディアURL')}
----`;
-
-  const researchBlock = research
-    ? `【DeepResearch結果】\n---\n${research}\n---`
-    : `【DeepResearch結果】\n---\n（未入力）DeepResearch情報がない項目は「要ヒアリング」として扱ってください。\n---`;
-
-  const prompt = `# 役割
-あなたはSEO/コンテンツマーケティングSaaS「EmmaTools」のカスタマーサクセス担当者です。
-既存顧客との商談（提案目的：${purpose}）に向けた社内用準備資料を作成します。
-
-# タスク
-下記の【顧客カルテ】と【DeepResearch結果】を統合し、以下2つの表を日本語のMarkdown表で出力してください。
-
-## 出力1：顧客の現状整理
-| 観点 | 確認内容 | 現状メモ |
-|------|----------|----------|
-| 事業状況 | 商材・注力市場・KPI | |
-| Web/SEO状況 | 流入・DR・主要KW・運用体制 | |
-| 課題感 | 流入減・CV不足・記事停滞・競合優位・AI検索対応 | |
-| 意思決定者 | 決裁者・現場推進者・稟議時の懸念 | |
-
-## 出力2：アップセル／クロスセル提案整理
-| 提案候補 | 刺さる顧客課題 | 提案ストーリー | 優先度 |
-|----------|----------------|----------------|--------|
-| 追加アカウント／利用範囲拡大 | 社内運用者が増えている、承認者も確認したい | 運用を属人化させず、複数人で品質管理できる体制へ | |
-| 記事制作・リライト支援 | 制作リソース不足、既存記事の成果低下 | 短期で改善余地の大きい記事から流入・CVを再獲得 | |
-| SEOコンサル／定例伴走 | 施策判断に迷いがある、優先順位が決められない | 業界変化と競合差分を踏まえ施策優先度を継続整理 | |
-| レポート／競合モニタリング | 競合動向を定期的に追えていない | 市場変化を定例で可視化し先手で施策を打てる状態に | |
-
-# セルの埋め方ルール（厳守）
-1. 現状メモは【顧客カルテ】と【DeepResearch結果】の記載に基づく事実ベースで書く。根拠を [顧客カルテ] / [DeepResearch] の形で末尾に添える。
-2. 記載がない項目は推測せず「要ヒアリング：〜」と明記する。
-3. Web/SEO状況には Organic トラフィック・DR・流入KW を必ず転記する。
-4. 課題感には顧客の課題に加え、DeepResearch の AI検索影響・競合動向から「対応すべき外部要因」を1つ補う。
-5. 優先度（高／中／低）は ①顧客課題との合致度 ②運用体制ボトルネック解消 ③業界の緊急度 の3軸で判定し、理由を1行添える。
-
-# 出力形式
-- 上記2表のみをMarkdownで出力。前置き・後書き・コードブロックは不要。
-- 各セルは100字以内。
-
----
-
-${karte}
-
-${researchBlock}`;
-
-  const out = document.getElementById('karte_out');
-  out.value = prompt;
-  out.classList.add('has-content');
+// 現状メモ用：値があれば「値 [出典]」、なければ「要ヒアリング」span
+function memo(val, label, src) {
+  if (val) return { html: `${esc(val)} <span class="src">[${src}]</span>`, md: `${val} [${src}]` };
+  return { html: `<span class="hear">要ヒアリング：${esc(label)}</span>`, md: `要ヒアリング：${label}` };
 }
 
-// ─── Copy ───
+function genKarte() {
+  const company   = v('company') || '（企業名未入力）';
+  const product   = v('product');
+  const kpi       = v('kpi');
+  const purposeArr= [...document.querySelectorAll('input[name="purpose"]:checked')].map(e=>e.value);
+  const purpose   = purposeArr.join('・') || '要ヒアリング';
+  const issues    = v('issues');
+  const top_kw    = v('top_kw');
+  const team      = v('team');
+  const organic   = v('organic');
+  const dr        = v('dr');
+  const competitors = v('competitors');
+  const research  = v('deep_research');
+
+  // ── テキスト解析（優先度・外部要因判定用） ──
+  const single   = hit(team, /専任\s*1\s*名|専任1名|1名|一人|ひとり|1人/) && !hit(team, /チーム|複数/);
+  const multi    = hit(team, /チーム|複数|数名|[2-9]\s*名/);
+  const noOut    = hit(team, /外注なし|外注無|内製/);
+  const resShort = hit(issues, /リソース|人手|時間がない|書けない|停滞|追いつ|手が回|更新でき|本数/);
+  const declHit  = hit(issues, /流入.{0,4}(減|落|伸びない|増えない)|成果.{0,4}(出ない|低下|薄)|順位.{0,4}(下が|落)|CV.{0,4}(少|減|低)/);
+  const doubtHit = hit(issues, /自信|迷|優先順位|わからない|分からない|判断|何を|どう/);
+  const compHit  = hit(issues, /競合.{0,6}(追い|負け|抜か|優位|差|遅れ)/) || hit(issues, /競合/);
+  const aiUrgent = hit(research, /AI検索|SGE|生成AI|ChatGPT|Perplexity|ゼロクリック|AI\s*Overview/) || hit(issues, /AI検索|生成AI/);
+  const compResearch = hit(research, /競合/);
+  const hasComp  = competitors.length > 0;
+  const wantUp   = purposeArr.includes('アップセル');
+
+  // ════ 出力1：現状整理 ════
+  const biz = product || kpi
+    ? memo([product && `商材：${product}`, kpi && `KPI：${kpi}`].filter(Boolean).join(' / '), '商材・KPI', '顧客カルテ')
+    : memo('', '商材・注力市場・売上目標', '顧客カルテ');
+  const bizMarket = ' / 注力市場・売上目標は要ヒアリング';
+
+  const webParts = [];
+  webParts.push(organic ? `月Organic ${organic}` : '月Organic：要ヒアリング');
+  webParts.push(dr ? `DR ${dr}` : 'DR：要ヒアリング');
+  webParts.push(top_kw ? `主要KW：${top_kw}` : '主要KW：要ヒアリング');
+  webParts.push(team ? `体制：${team}` : '運用体制：要ヒアリング');
+  const webHtml = esc(webParts.join(' / ')) + ' <span class="src">[顧客カルテ]</span>';
+  const webMd   = webParts.join(' / ') + ' [顧客カルテ]';
+
+  // 課題感：顧客課題 + 外部要因（DeepResearch）
+  let issueHtml, issueMd;
+  const base = issues ? `${issues}` : '要ヒアリング：現在の課題感';
+  let ext = '';
+  if (aiUrgent) ext = '外部要因：AI検索の影響が拡大しており対応の緊急度が高い [DeepResearch]';
+  else if (compResearch || hasComp) ext = '外部要因：競合のSEO/コンテンツ施策が活発で差をつけられるリスク [DeepResearch]';
+  else ext = '外部要因：要ヒアリング（DeepResearch未入力のため業界の外部要因を確認）';
+  issueHtml = `${esc(base)} <span class="src">[${issues?'顧客カルテ':'—'}]</span><br>${esc(ext.replace(/\s*\[.*\]$/,''))} <span class="src">[${ext.includes('要ヒアリング')?'—':'DeepResearch'}]</span>`;
+  issueMd   = `${base}${issues?' [顧客カルテ]':''} / ${ext}`;
+
+  const dm = memo('', '決裁者・現場推進者・影響者・稟議時の懸念', '顧客カルテ');
+
+  const rows1 = [
+    ['事業状況', '商材・注力市場・売上目標', biz.html + `<span class="src">${bizMarket}</span>`, biz.md + bizMarket],
+    ['Web/SEO状況', '流入・DR・主要KW・運用体制', webHtml, webMd],
+    ['課題感', '流入減・CV不足・記事停滞・競合優位・AI検索対応', issueHtml, issueMd],
+    ['意思決定者', '決裁者・現場推進者・稟議時の懸念', dm.html, dm.md],
+  ];
+
+  // ════ 出力2：提案整理（優先度ルール判定） ════
+  function P(level, reason) {
+    const cls = level==='高'?'pri-high':level==='中'?'pri-mid':'pri-low';
+    return { html: `<span class="${cls}">${level}</span>（${esc(reason)}）`, md: `${level}（${reason}）` };
+  }
+
+  // 1. 追加アカウント／利用範囲拡大
+  let p1;
+  if (multi) p1 = P('高', '複数人運用で品質管理ニーズあり、承認者展開も見込める');
+  else if (single) p1 = P('低', '運用者が1名のため追加アカウントの必要性は低い');
+  else if (wantUp) p1 = P('中', 'アップセル目的に合致するが運用人数が不明、要ヒアリング');
+  else p1 = P('中', '運用人数が不明のため確認が必要');
+
+  // 2. 記事制作・リライト支援
+  let p2;
+  if (resShort || declHit || single || noOut) {
+    const why = [resShort&&'制作リソース不足', declHit&&'既存記事の成果低下', single&&'専任1名で制作が逼迫', noOut&&'外注なしで内製負荷大'].filter(Boolean)[0];
+    p2 = P('高', `${why}に直結し短期で流入・CV改善が見込める`);
+  } else p2 = P('中', '制作リソースに余力があれば優先度は中');
+
+  // 3. SEOコンサル・定例伴走
+  let p3;
+  if (doubtHit || compHit || aiUrgent) {
+    const why = [doubtHit&&'施策判断に迷いがある', compHit&&'競合優位への対応が必要', aiUrgent&&'AI検索など外部変化が急'].filter(Boolean)[0];
+    p3 = P('高', `${why}ため継続的な優先度整理が効く`);
+  } else p3 = P('中', '施策方針が定まっていれば優先度は中');
+
+  // 4. レポート・競合モニタリング
+  let p4;
+  if (compHit || (hasComp && compResearch)) p4 = P('高', '競合動向の継続把握ニーズが高く先手施策につながる');
+  else if (hasComp) p4 = P('中', '競合は把握済みだがモニタリング定例化の余地あり');
+  else p4 = P('低', '競合メディア未入力のため必要性が判断できない');
+
+  const rows2 = [
+    ['追加アカウント／利用範囲拡大', '社内運用者が増えている、承認者も確認したい', '運用を属人化させず、複数人で品質管理できる体制へ', p1],
+    ['記事制作・リライト支援', '制作リソース不足、既存記事の成果低下', '短期で改善余地の大きい記事から流入・CVを再獲得', p2],
+    ['SEOコンサル／定例伴走', '施策判断に迷いがある、優先順位が決められない', '業界変化と競合差分を踏まえ施策優先度を継続整理', p3],
+    ['レポート／競合モニタリング', '競合動向を定期的に追えていない', '市場変化を定例で可視化し先手で施策を打てる状態に', p4],
+  ];
+
+  // ── HTMLテーブル描画 ──
+  let t1 = '<table><thead><tr><th>観点</th><th>確認内容</th><th>現状メモ</th></tr></thead><tbody>';
+  rows1.forEach(r => { t1 += `<tr><td>${r[0]}</td><td>${esc(r[1])}</td><td>${r[2]}</td></tr>`; });
+  t1 += '</tbody></table>';
+  document.getElementById('table1').innerHTML = t1;
+
+  let t2 = '<table><thead><tr><th>提案候補</th><th>刺さる顧客課題</th><th>提案ストーリー</th><th>優先度</th></tr></thead><tbody>';
+  rows2.forEach(r => { t2 += `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td><td>${r[3].html}</td></tr>`; });
+  t2 += '</tbody></table>';
+  document.getElementById('table2').innerHTML = t2;
+
+  // ── Markdown生成（コピー用） ──
+  let md = `# 顧客カルテ：${company}\n（提案目的：${purpose}）\n\n## 出力1：顧客の現状整理\n`;
+  md += `| 観点 | 確認内容 | 現状メモ |\n|------|----------|----------|\n`;
+  rows1.forEach(r => { md += `| ${r[0]} | ${r[1]} | ${r[3].replace(/\n/g,' ')} |\n`; });
+  md += `\n## 出力2：アップセル／クロスセル提案整理\n`;
+  md += `| 提案候補 | 刺さる顧客課題 | 提案ストーリー | 優先度 |\n|----------|----------------|----------------|--------|\n`;
+  rows2.forEach(r => { md += `| ${r[0]} | ${r[1]} | ${r[2]} | ${r[3].md} |\n`; });
+  lastMarkdown = md;
+
+  document.getElementById('karte_result').style.display = 'block';
+}
+
+function copyMarkdown() {
+  if (!lastMarkdown) return;
+  navigator.clipboard.writeText(lastMarkdown).then(() => showCopied('copy2'))
+    .catch(() => { const t=document.createElement('textarea'); t.value=lastMarkdown; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); showCopied('copy2'); });
+}
+
+// ─── Copy (DeepResearch prompt) ───
 function copyEl(id, statusId) {
   const el = document.getElementById(id);
   if (!el.value || el.value.startsWith('「プロンプト')) return;
