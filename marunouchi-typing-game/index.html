@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>丸ノ内線タイピングゲーム</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+  <header class="app-header">
+    <h1><span class="marker">M</span> 丸ノ内線タイピングゲーム</h1>
+    <div class="header-controls">
+      <button id="muteBtn" class="icon-btn" title="ミュート切り替え">🔊</button>
+      <button id="reverseBtn" class="icon-btn small-btn" title="逆走行モード（荻窪→池袋）">↔ 逆走行</button>
+    </div>
+  </header>
+
+  <section class="status-bar">
+    <div class="status-item">
+      <span class="status-label">進捗</span>
+      <span class="status-value" id="progressText">1 / 25駅</span>
+    </div>
+    <div class="status-item">
+      <span class="status-label">タイム</span>
+      <span class="status-value" id="timeText">0.0秒</span>
+    </div>
+    <div class="status-item">
+      <span class="status-label">ミス</span>
+      <span class="status-value" id="missText">0</span>
+    </div>
+    <div class="status-item best-time-item" id="bestTimeItem" hidden>
+      <span class="status-label">ベストタイム</span>
+      <span class="status-value" id="bestTimeText">--</span>
+    </div>
+  </section>
+
+  <section class="line-map-wrap">
+    <div class="line-map" id="lineMap">
+      <svg id="lineSvg" class="line-svg" viewBox="0 0 1000 160" preserveAspectRatio="none">
+        <path id="lineBase" class="line-base" d=""></path>
+        <path id="lineProgress" class="line-progress" d=""></path>
+      </svg>
+      <div class="train" id="train">🚃</div>
+      <div class="stations" id="stations"></div>
+    </div>
+  </section>
+
+  <section class="quiz-area">
+    <div class="station-kanji" id="stationKanji">池袋</div>
+    <div class="station-kana" id="stationKana">いけぶくろ</div>
+    <div class="romaji-display" id="romajiDisplay"></div>
+  </section>
+
+  <section class="footer-note">
+    <p>キーボードでローマ字入力してください（例：ikebukuro）</p>
+  </section>
+
+  <!-- Clear Modal -->
+  <div class="modal-overlay" id="clearModal" hidden>
+    <div class="modal">
+      <h2 class="modal-title">🎉 ゴール！ <span id="clearStationName">荻窪</span> 到着</h2>
+      <div class="result-grid">
+        <div class="result-item">
+          <span class="result-label">クリアタイム</span>
+          <span class="result-value" id="resultTime">0.0秒</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">ミスタイプ数</span>
+          <span class="result-value" id="resultMiss">0</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">スコア</span>
+          <span class="result-value" id="resultScore">0</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">ベストタイム</span>
+          <span class="result-value" id="resultBest">--</span>
+        </div>
+      </div>
+      <button id="restartBtn" class="primary-btn">もう一度プレイ</button>
+    </div>
+  </div>
+
+</div>
+<script src="script.js"></script>
+</body>
+</html>
