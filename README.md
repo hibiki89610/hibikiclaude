@@ -307,7 +307,7 @@ writing_rules:
 
 ### 出力サンプル
 
-`output/daily-report-2026-08-14.md` に、上記の入力から生成した実例が入っています。
+`output/daily-report-sample.md` に、上記の入力から生成した実例（サンプルデータ）が入っています。
 
 ```
 ■担当KPIと進捗（月間）
