@@ -108,16 +108,47 @@ prohibited:
 # 日報に含めるセクションを true / false で切り替えます
 sections:
   kpi_progress: false       # ■担当KPIと進捗（月間）
-  weekly_ratio: false       # ■週次稼働割合（必要なときは 今週の稼働割合出して で単独出力）
+  weekly_ratio: true        # ■週次の稼働割合
   work_log: true            # ■本日の業務実績
   insight: true             # ■所感
   issue: true               # ■課題・相談事項
   next_day: true            # ■次の営業日のタスク
 
 # --------------------------------------------
+# 週次の稼働割合
+# --------------------------------------------
+weekly_ratio:
+  week_start: "火"          # 週の起点となる曜日
+  unit: "hours"             # hours（時間のみ）/ percent（%も併記）
+  format: "・グループ名（X.Xh）"
+  sort: "desc"              # 時間の多い順
+  show_total: false
+
+# 週次の集計に使うグループ（大まかな束ね方）
+# 台帳のタスクをこのグループのいずれかに寄せて合算します
+weekly_groups:
+  - name: "社内MTG"
+    includes: ["社内MTG", "夕礼", "朝礼", "共有会", "定例"]
+  - name: "クライアントMTG"
+    includes: ["クライアントMTG", "社外MTG", "MTG準備", "MTG前準備"]
+  - name: "クライアントタスク"
+    includes: ["競合洗い出し", "サイト分析", "KWチェック", "記事分析", "スライド作成", "レポート"]
+  - name: "EmmaQuickリリース業務"
+    includes: ["EmmaQuick", "フルスタ", "リリース", "Notion作成"]
+  - name: "EmmaTools関連業務"
+    includes: ["EmmaTools", "機能紹介ページ", "機能ページ", "AIO"]
+  - name: "施策・イベント"
+    includes: ["座談会", "コミュニティ", "イベント", "アンケート", "メルマガ"]
+  - name: "解約対応"
+    includes: ["解約"]
+  - name: "メール対応・事務"
+    includes: ["メール", "請求書", "経費", "アカウント発行", "HubSpot", "事務"]
+
+# --------------------------------------------
 # 業務実績の書式
 # --------------------------------------------
 work_log:
+  heading: "■本日の業務実績"
   format: "・タスク名（X.Xh）"
   show_output: false        # true にするとタスクごとにアウトプットを併記
   show_total: false         # true にすると末尾に ※合計X.Xh を付ける
@@ -141,6 +172,7 @@ issue:
   free_form: true           # 定型の2行構成に縛らず、その日に伝えるべき内容を書く
   ask_to_someone: true      # 相談する場合は依頼先を明記する
   allow_notice_only: true   # 休暇連絡など、連絡事項のみでもよい
+  allow_none: true          # 本当に何もない日は 特になし と書く（無理に作らない）
 
 # --------------------------------------------
 # 次営業日タスクの方針
