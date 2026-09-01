@@ -20,8 +20,8 @@ profile:
 # unit  : 単位
 # source: 実績の取得元（日報入力 or 手動更新）
 kpi:
-  month: "2026-08"          # 対象月（月初に更新）
-  business_days: 20         # 当月の営業日数（進捗ペース計算用）
+  month: "2026-09"          # 対象月（月初に更新）
+  business_days: 22         # 当月の営業日数（進捗ペース計算用。祝日は未考慮）
   items:
     - name: "架電数"
       target: 1000
