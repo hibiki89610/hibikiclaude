@@ -1,14 +1,16 @@
 # spec（データ定義）スキーマ — 資料作成エンジン
 
 `engine/build.mjs` が読む spec は、資料1本分の中身を持つ JS オブジェクト（`module.exports = { ... }`）。
-**新規作成は `engine/specs/_TEMPLATE/spec.js` をコピーして `engine/specs/<資料名>/spec.js` を作る。**
+**新規作成は `engine/specs/_TEMPLATE/spec.js` をコピーして `projects/<案件名>/02_ワーク/spec.js` を作る。**
 完成例は `engine/specs/sample/spec.js`。
 
 ビルド：
 
 ```bash
-node engine/build.mjs "engine/specs/<資料名>/spec.js" "output/<資料名>.html"
+node engine/build.mjs "projects/<案件名>/02_ワーク/spec.js" "projects/<案件名>/03_納品/<案件名>_<YYYYMMDD>.html"
 ```
+
+ネット接続は不要。ビルドはローカルのNode.js（v18以上）だけで完結する。
 
 出力はCSS・JS・データを埋め込んだ**単一HTML**。Chromeで開き、`Ctrl/Cmd + P` →「PDFに保存」で
 16:9（960×540pt）のスライドPDFになる。用紙サイズと余白はCSSで指定済みなので、印刷設定は既定のままでよい。
@@ -82,7 +84,7 @@ CSSで自動縮小はしないため、**入れすぎるとカード内で文字
 
 ## 編集してよい場所 / いけない場所
 
-- 編集してよい：`engine/specs/<資料名>/`（案件ごとのspec）、`output/`
+- 編集してよい：`projects/<案件名>/`（案件ごとのブリーフ・データ・spec・納品物）
 - 編集しない：`engine/lib/`（デザインシステム共通部品）、`engine/build.mjs`、`engine/specs/_TEMPLATE/`、`engine/specs/sample/`
 
 デザインを変えたいときは `lib/` を書き換えず、まず `theme` での色上書きで足りるかを検討する。
