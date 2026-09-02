@@ -1,0 +1,14 @@
+{
+  "name": "llmo-report-engine",
+  "version": "3.0.0",
+  "private": true,
+  "description": "LLMO分析レポート生成エンジン（EmmaToolsデザイン / pptxgenjs）。node_modules同梱で追加インストール不要。",
+  "main": "build.js",
+  "scripts": {
+    "build:b2c": "node build.js specs/タイムズ24様/b2c.js ../02_データ/タイムズ24様/output/タイムズ様_LLMO分析_B2C.pptx",
+    "build:b2b": "node build.js specs/タイムズ24様/b2b.js ../02_データ/タイムズ24様/output/タイムズ24様_LLMO分析_B2B.pptx"
+  },
+  "dependencies": {
+    "pptxgenjs": "^4.0.1"
+  }
+}
