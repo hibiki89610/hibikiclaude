@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>オウンドメディア品質改善のご提案</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* =========================================================
+   資料デザインシステム — 16:9 スライド（1280 x 720px）
+   このファイルは共通部品です。個別案件では編集せず、
+   spec の theme: {...} で色・クレジットを上書きしてください。
+   ========================================================= */
+
+:root {
+  /* ---- 色（spec の theme で上書き可能） ---- */
+  --c-ink:    #222222;  /* 本文（純黒は使わない） */
+  --c-sub:    #555a63;  /* サブテキスト */
+  --c-mute:   #8a8f98;  /* 補足・メタ */
+  --c-our:    #8541dc;  /* メイン（主張・自社） */
+  --c-user:   #a970e8;  /* 明るいメイン */
+  --c-digi:   #6a2fb8;  /* 濃いメイン */
+  --c-navy:   #4a1f87;  /* 強調・濃色カード */
+  --c-accent: #f57527;  /* CTA・警告（唯一の暖色） */
+  --c-our-t:    #f0e6fc;
+  --c-user-t:   #f5effd;
+  --c-digi-t:   #e9def9;
+  --c-accent-t: #fde9da;
+  --c-pale:   #ece1fb;
+  --c-ice:    #d9cbf2;  /* 濃色背景上のサブテキスト */
+  --c-light:  #f5f5f7;  /* ライトカード背景 */
+  --c-line:   #e5e5ea;  /* 罫線 */
+  --c-white:  #ffffff;
+  --c-dark1:  #2a1655;  /* 濃色グラデ 始点 */
+  --c-dark2:  #5b2ea8;  /* 濃色グラデ 終点 */
+
+  --font: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif;
+  --radius: 12px;
+  --pad-x: 56px;        /* スライド左右の余白 */
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #e9e9ee;
+  font-family: var(--font);
+  color: var(--c-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- ステージ（画面表示時の縮小コンテナ） ---- */
+.stage { display: flex; flex-direction: column; align-items: center; gap: 24px; padding: 24px 0 48px; }
+
+/* ---- スライド本体 ---- */
+.slide {
+  position: relative;
+  width: 1280px;
+  height: 720px;
+  flex: none;
+  background: var(--c-white);
+  overflow: hidden;
+  box-shadow: 0 6px 24px rgba(42, 22, 85, .16);
+  transform-origin: top center;
+}
+.slide.dark {
+  background: linear-gradient(135deg, var(--c-dark1) 0%, var(--c-dark2) 100%);
+  color: var(--c-white);
+}
+/* 濃色スライドの装飾（3円モチーフ） */
+.slide.dark::after {
+  content: "";
+  position: absolute; right: -80px; bottom: -120px;
+  width: 420px; height: 420px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, rgba(255,255,255,.14), rgba(255,255,255,0) 62%);
+  pointer-events: none;
+}
+
+/* ---- ヘッダー（キッカー + タイトル） ---- */
+.s-head { position: absolute; left: var(--pad-x); right: var(--pad-x); top: 32px; }
+.s-kicker {
+  font-size: 14.5px; font-weight: 700; letter-spacing: .18em;
+  color: var(--c-our); margin: 0 0 8px;
+}
+.s-title {
+  font-size: 33.5px; font-weight: 700; line-height: 1.35;
+  color: var(--c-ink); margin: 0;
+}
+.s-lead {
+  position: absolute; left: var(--pad-x); right: var(--pad-x); top: 116px;
+  font-size: 17.5px; color: var(--c-sub); line-height: 1.6; margin: 0;
+}
+
+/* ---- 本文エリア（ヘッダーとフッターの間） ---- */
+.s-body {
+  position: absolute; left: var(--pad-x); right: var(--pad-x); top: 156px; bottom: 82px;
+  display: flex; flex-direction: column; justify-content: center;
+}
+.s-body.has-lead { top: 190px; }
+
+/* ---- フッター ---- */
+.s-foot {
+  position: absolute; left: var(--pad-x); right: var(--pad-x); bottom: 26px;
+  display: flex; justify-content: space-between; align-items: flex-end;
+  font-size: 11.5px; color: #9aa0aa;
+}
+.slide.dark .s-foot { color: var(--c-ice); }
+.s-page { font-weight: 700; }
+/* 脚注（🔵観測 / 🟡推定 など） */
+.s-note {
+  position: absolute; left: var(--pad-x); right: var(--pad-x); bottom: 48px;
+  font-size: 12.5px; color: var(--c-mute); line-height: 1.45; margin: 0;
+}
+
+/* ---- カード共通 ---- */
+.card {
+  background: var(--c-white);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius);
+  box-shadow: 0 3px 10px rgba(133, 65, 220, .10);
+  position: relative;
+  overflow: hidden;
+}
+.card.flat { box-shadow: none; }
+.card.tint { border-color: transparent; box-shadow: none; }
+.card .bar { position: absolute; left: 0; right: 0; top: 0; height: 4px; }
+
+/* ---- pill / タグ ---- */
+.pill {
+  display: inline-block; padding: 5px 14px; border-radius: 999px;
+  font-size: 14px; font-weight: 700; line-height: 1.2;
+}
+
+/* ---- 表紙 ---- */
+.cover-badge { font-size: 17.5px; font-weight: 700; letter-spacing: .22em; color: var(--c-ice); }
+.cover-title { font-size: 50.5px; font-weight: 700; line-height: 1.25; color: var(--c-white); margin: 18px 0 0; white-space: pre-line; }
+.cover-sub   { font-size: 20px; color: var(--c-ice); line-height: 1.6; margin: 18px 0 0; max-width: 820px; }
+.cover-client{ font-size: 22.5px; font-weight: 700; color: var(--c-white); margin: 46px 0 0; }
+.cover-meta  { font-size: 16.5px; color: var(--c-ice); line-height: 1.7; margin: 10px 0 0; white-space: pre-line; }
+
+/* ---- 章扉 ---- */
+.sec-no    { font-size: 53.5px; font-weight: 700; color: #8e76c8; line-height: 1; }
+.sec-title { font-size: 44px; font-weight: 700; color: var(--c-white); margin: 14px 0 0; line-height: 1.25; }
+.sec-sub   { font-size: 18.5px; color: var(--c-ice); margin: 16px 0 0; line-height: 1.6; max-width: 900px; }
+
+/* ---- アジェンダ ---- */
+.agenda-row {
+  display: grid; grid-template-columns: 62px 300px 1fr;
+  align-items: center; gap: 16px;
+  background: var(--c-light); border-radius: var(--radius);
+  padding: 0 22px; margin-bottom: 10px;
+}
+.agenda-row.on { background: var(--c-our-t); }
+.agenda-no { font-size: 26.5px; font-weight: 700; color: var(--c-our); }
+.agenda-t  { font-size: 18px; font-weight: 700; }
+.agenda-d  { font-size: 14px; color: var(--c-sub); line-height: 1.5; }
+
+/* ---- FACT カード ---- */
+.grid { display: grid; gap: 18px; align-content: start; }
+.fact-label { font-size: 13.5px; font-weight: 700; letter-spacing: .1em; }
+.fact-n { font-weight: 700; line-height: 1.1; margin: 8px 0 12px; }
+.fact-n.lg { font-size: 53.5px; }
+.fact-n.sm { font-size: 32px; }
+.fact-t { font-size: 16.5px; font-weight: 700; line-height: 1.45; margin: 0 0 10px; }
+.fact-b { font-size: 13px; color: var(--c-sub); line-height: 1.65; margin: 0; }
+
+/* ---- KPI カード ---- */
+.kpi-stage { font-size: 16.5px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+.kpi-num {
+  width: 34px; height: 34px; border-radius: 50%; flex: none;
+  color: #fff; font-size: 16px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.kpi-name { font-size: 13.5px; font-weight: 700; color: var(--c-mute); margin: 14px 0 4px; line-height: 1.4; }
+.kpi-value { font-size: 42.5px; font-weight: 700; line-height: 1.1; }
+.kpi-detail { font-size: 12.5px; color: var(--c-sub); line-height: 1.55; margin: 8px 0 0; }
+
+/* ---- 読み取りボックス ---- */
+.readbox { background: var(--c-light); border-radius: var(--radius); padding: 16px 22px; }
+.readbox h4 { font-size: 16.5px; font-weight: 700; color: var(--c-our); margin: 0 0 8px; }
+.readbox ul { margin: 0; padding-left: 18px; }
+.readbox li { font-size: 14px; color: var(--c-ink); line-height: 1.7; }
+
+/* ---- 帯（左ラベル + 説明） ---- */
+.band {
+  display: grid; grid-template-columns: 220px 1fr; align-items: center; gap: 22px;
+  background: var(--c-light); border: 1px solid var(--c-line);
+  border-radius: var(--radius); padding: 14px 22px; margin-bottom: 12px;
+}
+.band-label {
+  border-radius: 999px; color: #fff; font-size: 14.5px; font-weight: 700;
+  text-align: center; padding: 8px 10px; line-height: 1.3;
+}
+.band-desc { font-size: 14px; line-height: 1.65; }
+
+/* ---- 表 ---- */
+table.dt { width: 100%; border-collapse: collapse; table-layout: fixed; }
+table.dt th {
+  background: var(--c-navy); color: #fff; font-size: 14.5px; font-weight: 700;
+  text-align: left; padding: 11px 14px; line-height: 1.4;
+}
+table.dt td {
+  font-size: 14px; color: var(--c-ink); line-height: 1.55;
+  padding: 11px 14px; border-bottom: 1px solid var(--c-line); vertical-align: middle;
+}
+table.dt tbody tr:nth-child(even) { background: #fafaff; }
+table.dt tbody tr.hl { background: var(--c-our-t); }
+.takeaway { font-size: 15.5px; font-weight: 700; color: var(--c-accent); line-height: 1.6; margin: 16px 0 0; }
+
+/* ---- 比較（強み/弱み） ---- */
+.cmp-h { font-size: 17.5px; font-weight: 700; margin: 0 0 12px; display: flex; align-items: center; gap: 9px; }
+.cmp-h .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.cmp ul { margin: 0; padding-left: 18px; }
+.cmp li { font-size: 14px; line-height: 1.75; color: var(--c-ink); margin-bottom: 6px; }
+
+/* ---- 大きい数字 ---- */
+.stat-n { font-size: 58.5px; font-weight: 700; line-height: 1.1; }
+.stat-l { font-size: 16.5px; font-weight: 700; line-height: 1.5; margin: 10px 0 0; }
+.stat-s { font-size: 11.5px; color: var(--c-mute); line-height: 1.5; margin: 8px 0 0; }
+
+/* ---- 箇条書きスライド ---- */
+.bullets { margin: 0; padding: 0; list-style: none; }
+.bullets li {
+  font-size: 17.5px; line-height: 1.7; color: var(--c-ink);
+  padding-left: 26px; margin-bottom: 14px; position: relative;
+}
+.bullets li::before {
+  content: ""; position: absolute; left: 4px; top: 8px;
+  width: 9px; height: 9px; border-radius: 2px; background: var(--c-our);
+}
+.darkbox { background: var(--c-navy); border-radius: var(--radius); color: #fff; padding: 18px 24px; }
+.darkbox h4 { font-size: 16px; font-weight: 700; color: var(--c-ice); margin: 0 0 8px; }
+.darkbox p  { font-size: 14.5px; line-height: 1.7; margin: 0; }
+
+/* ---- タイムライン ---- */
+.tl-h { border-radius: 999px; color: #fff; font-size: 15.5px; font-weight: 700; text-align: center; padding: 8px 12px; }
+.tl ul { margin: 14px 0 0; padding-left: 18px; }
+.tl li { font-size: 14px; line-height: 1.7; margin-bottom: 8px; }
+
+/* ---- メッセージ（濃色1枚） ---- */
+.msg-title { font-size: 40px; font-weight: 700; line-height: 1.4; color: #fff; margin: 0; white-space: pre-line; }
+.msg-body  { font-size: 18.5px; line-height: 1.8; color: var(--c-ice); margin: 22px 0 0; max-width: 900px; }
+
+/* ---- CTA ---- */
+.cta-h { font-size: 45.5px; font-weight: 700; line-height: 1.35; color: #fff; margin: 0; white-space: pre-line; }
+.cta-list { margin: 30px 0 0; padding: 0; list-style: none; }
+.cta-list li {
+  font-size: 18px; line-height: 1.7; color: #fff;
+  padding-left: 30px; margin-bottom: 14px; position: relative;
+}
+.cta-list li::before {
+  content: ""; position: absolute; left: 0; top: 7px;
+  width: 14px; height: 14px; border-radius: 4px; background: var(--c-accent);
+}
+
+/* ---- 画面表示だけの操作バー ---- */
+.toolbar {
+  position: fixed; right: 18px; bottom: 18px; z-index: 50;
+  display: flex; gap: 8px; align-items: center;
+  background: rgba(42, 22, 85, .92); color: #fff;
+  border-radius: 999px; padding: 8px 14px;
+  font-size: 16px; box-shadow: 0 4px 14px rgba(0,0,0,.25);
+}
+.toolbar button {
+  font-family: var(--font); font-size: 16px; font-weight: 700;
+  background: var(--c-accent); color: #fff; border: 0;
+  border-radius: 999px; padding: 6px 14px; cursor: pointer;
+}
+
+/* =========================================================
+   印刷（Chrome の「PDFに保存」で 16:9 スライドPDFになる）
+   ========================================================= */
+@page { size: 338.66mm 190.5mm; margin: 0; }
+
+@media print {
+  html, body { background: #fff; }
+  .stage { display: block; padding: 0; gap: 0; }
+  .toolbar { display: none !important; }
+  .slide {
+    transform: none !important;
+    margin: 0 !important;
+    box-shadow: none;
+    page-break-after: always;
+    break-after: page;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .slide:last-child { page-break-after: auto; break-after: auto; }
+}
+
+</style>
+</head>
+<body>
+<div class="stage" id="stage"></div>
+<div class="toolbar">
+  <span id="pagecount"></span>
+  <button onclick="window.print()">PDFで保存</button>
+</div>
+<script>
+/* =========================================================
+   資料レンダラー — spec（データ定義）から16:9スライドHTMLを描く
+   このファイルは共通部品です。個別案件では編集しないでください。
+   使い方：renderDeck(spec, document.getElementById("stage"))
+   スライドの種類とスキーマは engine/README.md を参照。
+   ========================================================= */
+(function (root) {
+  "use strict";
+
+  var COLORS = ["our", "accent", "digi", "navy", "user", "mute"];
+  function cvar(key) {
+    var k = String(key || "our").toLowerCase();
+    return COLORS.indexOf(k) >= 0 ? "var(--c-" + k + ")" : "var(--c-our)";
+  }
+  function tint(key) {
+    var k = String(key || "our").toLowerCase();
+    var map = { our: "--c-our-t", user: "--c-user-t", digi: "--c-digi-t", accent: "--c-accent-t", navy: "--c-our-t", mute: "--c-light" };
+    return "var(" + (map[k] || "--c-our-t") + ")";
+  }
+  function esc(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+  // 改行を <br> に。**強調** を太字に。
+  function rich(s) {
+    return esc(s).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\n/g, "<br>");
+  }
+  function li(items, cls) {
+    return (items || []).map(function (t) { return "<li" + (cls ? ' class="' + cls + '"' : "") + ">" + rich(t) + "</li>"; }).join("");
+  }
+  function cols(n) { return "repeat(" + n + ", 1fr)"; }
+
+  // ─── 共通パーツ ───────────────────────────────
+  function head(s) {
+    if (!s.title && !s.kicker) return "";
+    return '<div class="s-head">' +
+      (s.kicker ? '<p class="s-kicker"' + (s.accent ? ' style="color:' + cvar(s.accent) + '"' : "") + ">" + esc(s.kicker) + "</p>" : "") +
+      (s.title ? '<h2 class="s-title">' + rich(s.title) + "</h2>" : "") +
+      "</div>";
+  }
+  function lead(s) { return s.lead ? '<p class="s-lead">' + rich(s.lead) + "</p>" : ""; }
+  function note(s) { return s.note ? '<p class="s-note">' + rich(s.note) + "</p>" : ""; }
+  function foot(ctx, dark) {
+    var page = ctx.page == null ? "" : '<span class="s-page">' + String(ctx.page).padStart(2, "0") + "</span>";
+    return '<div class="s-foot"><span>' + esc(ctx.credit || "") + "</span>" + page + "</div>";
+  }
+  function body(s, inner, style) {
+    return '<div class="s-body' + (s.lead ? " has-lead" : "") + '"' + (style ? ' style="' + style + '"' : "") + ">" + inner + "</div>";
+  }
+
+  // ─── スライド種別 ─────────────────────────────
+  var TYPES = {};
+
+  // 表紙
+  TYPES.cover = function (s, ctx) {
+    return '<div class="slide dark">' +
+      '<div style="position:absolute;left:var(--pad-x);top:140px;right:var(--pad-x)">' +
+        (s.badge ? '<p class="cover-badge">' + esc(s.badge) + "</p>" : "") +
+        '<h1 class="cover-title">' + rich(s.title) + "</h1>" +
+        (s.subtitle ? '<p class="cover-sub">' + rich(s.subtitle) + "</p>" : "") +
+        (s.client ? '<p class="cover-client">' + esc(s.client) + "</p>" : "") +
+        (s.meta ? '<p class="cover-meta">' + rich(s.meta) + "</p>" : "") +
+      "</div>" + foot({ credit: s.credit || ctx.credit, page: null }) + "</div>";
+  };
+
+  // 章扉
+  TYPES.section = function (s, ctx) {
+    return '<div class="slide dark">' +
+      '<div style="position:absolute;left:var(--pad-x);top:210px;right:var(--pad-x)">' +
+        (s.no ? '<p class="sec-no">' + esc(s.no) + "</p>" : "") +
+        '<h2 class="sec-title">' + rich(s.title) + "</h2>" +
+        (s.subtitle ? '<p class="sec-sub">' + rich(s.subtitle) + "</p>" : "") +
+      "</div>" + foot(ctx) + "</div>";
+  };
+
+  // 目次
+  TYPES.agenda = function (s, ctx) {
+    var rows = (s.items || []).map(function (it, i) {
+      return '<div class="agenda-row' + (s.highlight === i ? " on" : "") + '" style="height:' +
+        Math.max(48, Math.min(78, Math.floor(470 / Math.max(1, s.items.length)) - 10)) + 'px">' +
+        '<span class="agenda-no">' + esc(it[0]) + "</span>" +
+        '<span class="agenda-t">' + rich(it[1]) + "</span>" +
+        '<span class="agenda-d">' + rich(it[2] || "") + "</span></div>";
+    }).join("");
+    return '<div class="slide">' + head({ kicker: s.kicker || "AGENDA", title: s.title || "本日お話しすること" }) +
+      lead(s) + body(s, rows) + note(s) + foot(ctx) + "</div>";
+  };
+
+  // 結論FACT（2〜4枚の数字カード）
+  TYPES.facts = function (s, ctx) {
+    var n = (s.cards || []).length || 1;
+    var inner = '<div class="grid" style="grid-template-columns:' + cols(n) + '">' +
+      (s.cards || []).map(function (f, i) {
+        var c = cvar(f.c);
+        return '<div class="card" style="padding:26px 24px 22px">' +
+          '<span class="bar" style="background:' + c + '"></span>' +
+          '<p class="fact-label" style="color:' + c + '">' + esc(f.label || "FACT 0" + (i + 1)) + "</p>" +
+          '<p class="fact-n ' + (String(f.n || "").length > 5 ? "sm" : "lg") + '" style="color:' + c + '">' + rich(f.n) + "</p>" +
+          '<p class="fact-t">' + rich(f.t) + "</p>" +
+          '<p class="fact-b">' + rich(f.b) + "</p></div>";
+      }).join("") + "</div>";
+    return '<div class="slide">' + head(s) + lead(s) + body(s, inner) + note(s) + foot(ctx) + "</div>";
+  };
+
+  // KPI（指標カード + 読み取り）
+  TYPES.kpi = function (s, ctx) {
+    var n = (s.cards || []).length || 1;
+    var cards = '<div class="grid" style="grid-template-columns:' + cols(n) + '">' +
+      (s.cards || []).map(function (k, i) {
+        var c = cvar(k.c);
+        return '<div class="card" style="padding:24px 20px 20px">' +
+          '<span class="bar" style="background:' + c + '"></span>' +
+          '<div class="kpi-stage"><span class="kpi-num" style="background:' + c + '">' + (i + 1) + "</span>" + rich(k.stage) + "</div>" +
+          '<p class="kpi-name">' + rich(k.kpi) + "</p>" +
+          '<p class="kpi-value" style="color:' + c + '">' + rich(k.value) + "</p>" +
+          (k.detail ? '<p class="kpi-detail">' + rich(k.detail) + "</p>" : "") + "</div>";
+      }).join("") + "</div>";
+    var read = (s.reading && s.reading.length)
+      ? '<div class="readbox" style="margin-top:20px"><h4>' + esc(s.readingTitle || "読み取り") + "</h4><ul>" + li(s.reading) + "</ul></div>" : "";
+    return '<div class="slide">' + head(s) + lead(s) + body(s, cards + read) + note(s) + foot(ctx) + "</div>";
+  };
+
+  // 汎用カード（2〜4枚）
+  TYPES.cards = function (s, ctx) {
+    var list = s.cards || [];
+    var n = list.length || 1;
+    var perRow = n > 4 ? 3 : n;
+    var inner = '<div class="grid" style="grid-template-columns:' + cols(perRow) + '">' +
+      list.map(function (p) {
+        var c = cvar(p.c);
+        return '<div class="card" style="padding:26px 24px 22px">' +
+          '<span class="bar" style="background:' + c + '"></span>' +
+          (p.tag ? '<span class="pill" style="background:' + tint(p.c) + ";color:" + c + '">' + esc(p.tag) + "</span>" : "") +
+          '<p style="font-size:20px;font-weight:700;line-height:1.45;margin:' + (p.tag ? "14px" : "0") + ' 0 0">' + rich(p.t) + "</p>" +
+          (p.value ? '<p style="font-size:29.5px;font-weight:700;color:' + c + ';margin:10px 0 0">' + rich(p.value) + "</p>" : "") +
+          (p.b ? '<p style="font-size:14px;color:var(--c-sub);line-height:1.7;margin:12px 0 0">' + rich(p.b) + "</p>" : "") +
+          "</div>";
+      }).join("") + "</div>";
+    return '<div class="slide">' + head(s) + lead(s) + body(s, inner) + note(s) + foot(ctx) + "</div>";
+  };
+
+  // 表
+  TYPES.table = function (s, ctx) {
+    var w = s.colW || [];
+    var total = w.reduce(function (a, b) { return a + b; }, 0) || 1;
+    var cg = w.length ? "<colgroup>" + w.map(function (x) { return '<col style="width:' + (x / total * 100).toFixed(2) + '%">'; }).join("") + "</colgroup>" : "";
+    var th = (s.header || []).map(function (h) { return "<th>" + rich(h) + "</th>"; }).join("");
+    var tb = (s.rows || []).map(function (r, i) {
+      var hl = (s.highlightRow != null && s.highlightRow === i) ? ' class="hl"' : "";
+      return "<tr" + hl + ">" + r.map(function (cell) { return "<td>" + rich(cell) + "</td>"; }).join("") + "</tr>";
+    }).join("");
+    var inner = '<table class="dt">' + cg + (th ? "<thead><tr>" + th + "</tr></thead>" : "") + "<tbody>" + tb + "</tbody></table>" +
+      (s.takeaway ? '<p class="takeaway">' + rich(s.takeaway) + "</p>" : "");
+    return '<div class="slide">' + head(s) + lead(s) + body(s, inner) + note(s) + foot(ctx) + "</div>";
+  };
+
+  // 帯（レイヤー説明など）
+  TYPES.bands = function (s, ctx) {
+    var inner = (s.rows || []).map(function (r) {
+      return '<div class="band"><span class="band-label" style="background:' + cvar(r.c) + '">' + rich(r.label) + "</span>" +
+        '<span class="band-desc">' + rich(r.desc) + "</span></div>";
+    }).join("");
+    return '<div class="slide">' + head(s) + lead(s) + body(s, inner) + note(s) + foot(ctx) + "</div>";
+  };
+
+  // 2カラム比較（強み / 弱み）
+  TYPES.compare = function (s, ctx) {
+    function colHtml(o, def) {
+      if (!o) return "";
+      var c = cvar(o.c || def);
+      return '<div class="card cmp" style="padding:24px 26px;background:' + (o.tint === false ? "var(--c-white)" : tint(o.c || def)) + ';border-color:transparent;box-shadow:none">' +
+        '<p class="cmp-h" style="color:' + c + '"><span class="dot" style="background:' + c + '"></span>' + rich(o.t) + "</p>" +
+        "<ul>" + li(o.items) + "</ul></div>";
+    }
+    var top = '<div class="grid" style="grid-template-columns:1fr 1fr">' +
+      colHtml(s.left, "our") + colHtml(s.right, "accent") + "</div>";
+    var gap = s.gap ? '<div class="darkbox" style="margin-top:18px"><h4>' + esc(s.gap.t || "差分") + "</h4><p>" + (s.gap.items ? s.gap.items.map(rich).join("<br>") : rich(s.gap.body)) + "</p></div>" : "";
+    return '<div class="slide">' + head(s) + lead(s) + body(s, top + gap) + note(s) + foot(ctx) + "</div>";
+  };
+
+  // 大きい数字（2〜4個）
+  TYPES.stats = function (s, ctx) {
+    var n = (s.stats || []).length || 1;
+    var inner = '<div class="grid" style="grid-template-columns:' + cols(n) + ';align-content:start">' +
+      (s.stats || []).map(function (t) {
+        return '<div><p class="stat-n" style="color:' + cvar(t.c) + '">' + rich(t.n) + "</p>" +
+          '<p class="stat-l">' + rich(t.label) + "</p>" +
+          (t.source ? '<p class="stat-s">' + rich(t.source) + "</p>" : "") + "</div>";
+      }).join("") + "</div>";
+    var extra = s.takeaway ? '<p class="takeaway">' + rich(s.takeaway) + "</p>" : "";
+    return '<div class="slide">' + head(s) + lead(s) + body(s, inner + extra) + note(s) + foot(ctx) + "</div>";
+  };
+
+  // 箇条書き（+ 補足ボックス）
+  TYPES.bullets = function (s, ctx) {
+    var inner = '<ul class="bullets">' + li(s.items) + "</ul>" +
+      (s.box ? '<div class="darkbox" style="margin-top:8px"><h4>' + esc(s.box.title || "") + "</h4><p>" + rich(s.box.body) + "</p></div>" : "");
+    return '<div class="slide">' + head(s) + lead(s) + body(s, inner) + note(s) + foot(ctx) + "</div>";
+  };
+
+  // ロードマップ / 時系列（2〜4列）
+  TYPES.timeline = function (s, ctx) {
+    var n = (s.cols || []).length || 1;
+    var inner = '<div class="grid" style="grid-template-columns:' + cols(n) + '">' +
+      (s.cols || []).map(function (c) {
+        return '<div class="card tl" style="padding:20px 22px;background:var(--c-light)">' +
+          '<p class="tl-h" style="background:' + cvar(c.c) + '">' + rich(c.t) + "</p>" +
+          "<ul>" + li(c.items) + "</ul></div>";
+      }).join("") + "</div>";
+    return '<div class="slide">' + head(s) + lead(s) + body(s, inner) + note(s) + foot(ctx) + "</div>";
+  };
+
+  // 濃色1枚メッセージ
+  TYPES.message = function (s, ctx) {
+    return '<div class="slide dark">' +
+      '<div style="position:absolute;left:var(--pad-x);right:var(--pad-x);top:50%;transform:translateY(-50%)">' +
+      (s.kicker ? '<p class="s-kicker" style="color:var(--c-ice)">' + esc(s.kicker) + "</p>" : "") +
+      '<h2 class="msg-title">' + rich(s.title) + "</h2>" +
+      (s.body ? '<p class="msg-body">' + rich(s.body) + "</p>" : "") +
+      "</div>" + foot(ctx) + "</div>";
+  };
+
+  // 最終CTA
+  TYPES.cta = function (s, ctx) {
+    return '<div class="slide dark">' +
+      '<div style="position:absolute;left:var(--pad-x);right:var(--pad-x);top:140px">' +
+      '<h2 class="cta-h">' + rich(s.headline || s.title) + "</h2>" +
+      '<ul class="cta-list">' + li(s.points) + "</ul>" +
+      "</div>" + foot(ctx) + "</div>";
+  };
+
+  // ─── メイン ───────────────────────────────────
+  function renderDeck(spec, mount) {
+    var meta = spec.meta || {};
+    var slides = spec.slides || [];
+    var page = 0;
+    var html = slides.map(function (s) {
+      var fn = TYPES[s.type];
+      if (!fn) {
+        return '<div class="slide"><div class="s-body"><p style="color:var(--c-accent);font-weight:700">' +
+          "未定義のスライド種別: " + esc(s.type) + "（engine/README.md を確認）</p></div></div>";
+      }
+      if (s.type !== "cover") page += 1;
+      return fn(s, { page: s.type === "cover" ? null : page, credit: meta.credit || "" });
+    }).join("");
+
+    if (mount) {
+      mount.innerHTML = html;
+      applyTheme(spec.theme);
+      fitToWidth(mount);
+    }
+    return html;
+  }
+
+  // spec.theme の色を CSS 変数に反映
+  function applyTheme(theme) {
+    if (!theme || typeof document === "undefined") return;
+    var map = {
+      primary: "--c-our", light: "--c-user", dark: "--c-digi", deep: "--c-navy",
+      accent: "--c-accent", ink: "--c-ink", grad1: "--c-dark1", grad2: "--c-dark2",
+    };
+    Object.keys(theme).forEach(function (k) {
+      if (map[k]) document.documentElement.style.setProperty(map[k], theme[k]);
+    });
+  }
+
+  // 画面幅に合わせてスライドを縮小表示（印刷時は等倍のまま）
+  function fitToWidth(mount) {
+    if (typeof window === "undefined") return;
+    function fit() {
+      var scale = Math.min(1, (window.innerWidth - 48) / 1280);
+      Array.prototype.forEach.call(mount.querySelectorAll(".slide"), function (el) {
+        el.style.transform = "scale(" + scale + ")";
+        el.style.marginBottom = (720 * scale - 720) + "px";
+      });
+    }
+    fit();
+    window.addEventListener("resize", fit);
+  }
+
+  root.renderDeck = renderDeck;
+  if (typeof module !== "undefined" && module.exports) module.exports = { renderDeck: renderDeck };
+})(typeof window !== "undefined" ? window : globalThis);
+
+</script>
+<script id="spec-data" type="application/json">
+{"meta":{"title":"オウンドメディア品質改善のご提案","credit":"CONFIDENTIAL"},"slides":[{"type":"cover","badge":"PROPOSAL","title":"読まれる記事を、\n仕組みで作る。","subtitle":"トンマナ・SEO・ファクトの3点を、公開前に必ず通す運用へ。","client":"サンプル株式会社 御中","meta":"対象：オウンドメディア（月20本公開）\n作成日：2026-09-02 ｜ 作成：コンテンツ企画チーム"},{"type":"agenda","items":[["01","現状の課題","品質のばらつきと、公開後の手戻り"],["02","調査結果","直近30本の記事を実測した結果"],["03","解決の方向性","レビュー工程を仕組みに変える"],["04","導入イメージ","運用フローと体制"],["05","効果と次のステップ","見込める改善幅とスケジュール"]],"highlight":1},{"type":"section","no":"01","title":"現状の課題","subtitle":"何が起きているかを、事実から揃えます。"},{"type":"facts","kicker":"KEY FINDINGS","title":"直近30本の記事から見えた3つの事実","cards":[{"n":"62%","t":"トンマナ逸脱が1本あたり平均12件","b":"問いかけ表現とカギ括弧の混在が大半。執筆者ごとの解釈差が原因です。","c":"accent"},{"n":"3.4h","t":"1本あたりの手戻り時間","b":"公開後の指摘対応に要した平均時間。月20本で約68時間の再作業が発生しています。","c":"navy"},{"n":"18件","t":"出典のない数値・統計の記述","b":"うち5件は法令・医療に関わる記述で、表現の緩和が必要な水準でした。","c":"our"}],"note":"🔵 観測（2026-08-01〜08-31 公開分30本を実測）"},{"type":"kpi","kicker":"現状分析①","title":"工程別に見た、品質の落ちどころ","cards":[{"stage":"企画","kpi":"KW設計の実施率","value":"90%","detail":"企画段階の設計はほぼ機能している","c":"our"},{"stage":"執筆","kpi":"ルール準拠率","value":"38%","detail":"執筆者がルールを参照していない","c":"accent"},{"stage":"レビュー","kpi":"指摘の網羅率","value":"51%","detail":"レビュアーごとに見る観点が違う","c":"digi"},{"stage":"公開後","kpi":"手戻り発生率","value":"43%","detail":"公開後に修正が入る記事の割合","c":"navy"}],"reading":["落ちているのは執筆とレビューの2工程。企画の質は足りている。","レビューが人依存のため、同じ指摘が毎回すり抜けている。"],"note":"🔵 観測（工程ログ30本分）｜🟡 読み取りは仮説を含みます"},{"type":"compare","kicker":"現状分析②","title":"できていること / できていないこと","left":{"t":"できていること","c":"our","items":["キーワード設計と構成案のレビュー","公開スケジュールの管理","画像・図版の品質"]},"right":{"t":"できていないこと","c":"accent","items":["文体・表記ルールの機械的なチェック","出典のない数値の検出","レビュー観点の標準化"]},"gap":{"t":"差分から言えること","items":["人の判断が要る工程は回っている。**回っていないのは、機械的に判定できる工程**。","つまり、増員ではなくチェックの自動化が効く領域。"]},"note":"🟡 差分の解釈はチームヒアリングに基づく推定です"},{"type":"section","no":"02","title":"解決の方向性","subtitle":"レビューを、属人作業から仕組みへ。"},{"type":"cards","kicker":"APPROACH","title":"3つの打ち手","lead":"公開前に必ず通る関門を作り、機械的に判定できるものは自動で弾きます。","cards":[{"tag":"即効性 高","t":"ルールの明文化","b":"口調・禁止表現・表記ルールを1ファイルに集約し、全記事に同じ基準を適用します。","c":"accent"},{"tag":"自動化","t":"自動レビューの導入","b":"公開前チェックを自動実行。逸脱箇所と修正案を一覧で出し、レビュアーは判断だけに集中します。","c":"our"},{"tag":"信頼性","t":"ファクトチェック工程","b":"数値・統計・法令に関する記述を抽出し、出典確認の対象を明確にします。","c":"digi"}]},{"type":"bands","kicker":"WORKFLOW","title":"導入後の運用フロー","rows":[{"label":"① 執筆","c":"our","desc":"執筆者はルールファイルを参照して執筆。迷ったら自動レビューを自分で回して直してから提出する。"},{"label":"② 自動レビュー","c":"digi","desc":"トンマナ・表記・SEO・ファクトの4観点を自動判定。重要度A/B/Cのタグ付きで結果を返す。"},{"label":"③ 人のレビュー","c":"navy","desc":"重要度Aの修正が済んだ状態から開始。レビュアーは内容の妥当性と独自性の判断に集中する。"},{"label":"④ 公開","c":"accent","desc":"チェック済みのHTMLをそのまま入稿。公開後の手戻りは例外対応のみ。"}]},{"type":"table","kicker":"SCOPE","title":"自動化の対象範囲","lead":"機械的に判定できるものは自動、判断が要るものは人が担当します。","colW":[3,2,5],"header":["チェック項目","担当","内容"],"rows":[["文体・口調の統一","自動","ですます／だである の混在、問いかけ表現の検出と修正案の提示"],["表記ゆれ","自動","用語リストに沿った統一。半角全角・句読点・記号の作法もあわせて判定"],["SEO要件","自動＋人","タイトル文字数・KW配置は自動、狙いの妥当性は人が判断"],["ファクト","自動＋人","要検証の主張を自動抽出し、出典確認は人が実施"],["独自性・切り口","人","自動化の対象外。編集者の判断に委ねる"]],"highlightRow":4,"takeaway":"自動化するのは、毎回同じ判定になるものだけ。編集判断は人に残します。"},{"type":"stats","kicker":"IMPACT","title":"見込める効果","stats":[{"n":"-68h","label":"月あたりの手戻り削減","source":"現状の手戻り時間（3.4h × 20本）を基準に試算","c":"accent"},{"n":"38% → 90%","label":"ルール準拠率の改善目標","source":"自動チェックを通過しないと提出できない運用を前提","c":"our"},{"n":"2週間","label":"導入までの期間","source":"ルール定義1週間 + 試験運用1週間","c":"digi"}],"takeaway":"削減できた時間は、記事本数ではなく1本あたりの取材・独自性に再投資することを推奨します。","note":"🟡 推定（現状実測値をもとにした試算。実績値ではありません）"},{"type":"timeline","kicker":"ROADMAP","title":"導入スケジュール","cols":[{"t":"1週目｜準備","c":"accent","items":["ルールの棚卸しと明文化","禁止表現・用語リストの確定","既存記事3本で試験実行"]},{"t":"2週目｜試験運用","c":"our","items":["新規記事5本を自動レビューに通す","誤検出の調整","レビュアー向けの手順共有"]},{"t":"3週目以降｜本運用","c":"digi","items":["全記事を対象に適用","月次で指摘傾向を振り返り","ルールの追加・更新"]}]},{"type":"bullets","kicker":"PRECONDITIONS","title":"進めるうえでの前提","items":["ルールの最終決定者を1名決めること。判断が分かれたときの基準が必要です。","自動レビューの結果は**修正案**であり、採否は編集者が判断します。","法令・医療・金融に関わる記述は、自動判定に頼らず必ず有資格者の確認を通します。"],"box":{"title":"この提案に含まれないこと","body":"記事の企画・執筆代行、CMSへの入稿作業、被リンク施策は本提案の範囲外です。"}},{"type":"message","kicker":"SUMMARY","title":"品質は、人の気合いではなく\n通す関門の数で決まる。","body":"毎回同じ判定になるものを自動化すれば、編集者の時間は、その記事にしか書けないことに向けられます。"},{"type":"cta","headline":"まずは既存記事3本から、\n始められます。","points":["現行のルールを1ファイルにまとめるところから着手します（所要1週間）","既存記事3本で自動レビューを実行し、検出精度をその場で確認いただけます","30分のお打ち合わせで、対象メディアと優先順位をすり合わせさせてください"]}]}
+</script>
+<script>
+(function () {
+  var spec = JSON.parse(document.getElementById("spec-data").textContent);
+  renderDeck(spec, document.getElementById("stage"));
+  document.getElementById("pagecount").textContent =
+    document.querySelectorAll(".slide").length + " スライド";
+})();
+</script>
+</body>
+</html>
