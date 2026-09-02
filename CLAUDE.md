@@ -20,6 +20,14 @@
 3. 発話にクライアント名が含まれていなければ、SKILLのSTEP 1でメンバーに確認する
 4. 対象クライアントがまだツールに未登録・計測データが無い場合は、SKILLの停止ルール（STEP 1.5）に従い、`llmo-registration/SKILL.md`（登録フェーズ）へ誘導する
 
+## Claude in Chrome（claude.aiの通常チャット）から使う場合
+
+このCLAUDE.mdは、Claude Codeがこのリポジトリをプロジェクトとして開いたセッションでのみ自動的に読み込まれる。
+Claude in Chrome（claude.aiの通常チャットからブラウザ操作する機能）はこのリポジトリを読み込まないため、
+「資料作成して」等と言っても本ファイルのルーティングは効かない。
+Claude in Chromeから使いたい場合は、[standalone-skills/](standalone-skills/README.md) にある
+claude.ai Skills版（アカウントに直接登録するSkill）を使うこと。
+
 ## 各キットの独立性
 
 - 記事レビューキット（ルート直下の `config/`・`input/`・`output/`・`templates/`）と LLMO無料分析キット（`【公開版】LLMO無料分析/`）は互いに依存しない。それぞれのファイルパス・ルールは自分のキット配下でのみ解決する

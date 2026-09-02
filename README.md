@@ -5,8 +5,10 @@ Claude Codeを使った半自動の記事レビュー＆自動修正システム
 
 > 📊 クライアント向けLLMO無料診断レポート（pptx資料）の自動作成については
 > [`【公開版】LLMO無料分析/`](【公開版】LLMO無料分析/00_はじめにお読みください.md) を参照してください。
-> Claude in Chromeで **「資料作成して」** と話しかけると、このキットのレポート作成フローが起動します
+> **Claude Code でこのリポジトリを開いている場合**は「資料作成して」と話しかけるとレポート作成フローが起動します
 > （詳細は [CLAUDE.md](CLAUDE.md) のタスクルーティングを参照）。
+> **Claude in Chrome（claude.aiの通常チャット）から使いたい場合**は、このリポジトリのCLAUDE.mdが読み込まれないため、
+> 代わりに [`standalone-skills/`](standalone-skills/README.md) のSkillをclaude.aiアカウントに登録してください。
 
 ## ディレクトリ構成
 
