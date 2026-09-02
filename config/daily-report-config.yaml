@@ -49,9 +49,9 @@ work_categories:
   - name: "クライアント対応"
     keywords: ["クライアント", "顧客", "商談", "定例", "打ち合わせ", "提案"]
   - name: "分析・レポーティング"
-    keywords: ["分析", "レポート", "スライド", "資料作成", "集計", "KW", "キーワード", "チェック"]
+    keywords: ["分析", "レポート", "スライド", "資料作成", "集計", "KW", "キーワード", "チェック", "SERanking", "順位"]
   - name: "プロダクト・リリース対応"
-    keywords: ["リリース", "新機能", "EmmaQuick", "AIO", "フルスタ", "不具合", "プロダクト"]
+    keywords: ["リリース", "新機能", "EmmaQuick", "EmmaLLMO", "AIO", "フルスタ", "不具合", "プロダクト"]
   - name: "仕組み化・自動化"
     keywords: ["自動化", "仕組み", "ツール", "整備", "テンプレ", "マニュアル"]
   - name: "MTG・社内連携"
@@ -136,7 +136,7 @@ weekly_groups:
   - name: "EmmaQuickリリース業務"
     includes: ["EmmaQuick", "フルスタ", "リリース", "Notion作成"]
   - name: "EmmaTools関連業務"
-    includes: ["EmmaTools", "機能紹介ページ", "機能ページ", "AIO"]
+    includes: ["EmmaTools", "EmmaLLMO", "機能紹介ページ", "機能ページ", "AIO"]
   - name: "施策・イベント"
     includes: ["座談会", "コミュニティ", "イベント", "アンケート", "メルマガ"]
   - name: "解約対応"
