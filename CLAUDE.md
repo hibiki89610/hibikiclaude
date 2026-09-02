@@ -31,12 +31,15 @@
 4. **共通部品は編集しない**：`engine/lib/`（デザインシステム）・`engine/build.mjs`・
    `engine/specs/_TEMPLATE/`・`engine/specs/sample/`。
    変更したい場合はファイルを書き換えず、変更案を提示してユーザーの判断を仰ぐ。
-5. **成果物の置き場所**：記事の修正済みHTMLは `output/`。資料は案件ごとに
-   `projects/<案件名>/` にまとめる（`00_ブリーフ/`・`01_データ/`・`02_ワーク/spec.js`・
-   `03_納品/<案件名>_<YYYYMMDD>.html`）。新規案件は `projects/_TEMPLATE/` をコピーして作る。
+5. **成果物の置き場所**：記事の修正済みHTMLは `output/`。資料は
+   `projects/<プロジェクト名>/<会社名>/` にまとめる（`00_ブリーフ/`・`01_データ/`・
+   `02_ワーク/spec_<YYYYMMDD>.js`・`03_納品/<会社名>_<YYYYMMDD>.html`）。
+   **会社フォルダが無ければ、確認を取らず `projects/_TEMPLATE/` をコピーして自動で作る。**
+   同じ会社の2本目以降もフォルダを分けず、日付つきファイルで積み上げる。
+   **過去の納品物・specは上書きしない。**
 6. **生成物は目視確認してから渡す**。資料は Claude in Chrome で生成したHTMLを開き、
    全ページの文字あふれ・空欄・誤字を確認してから完了を報告する。
-7. **ローカルファイルを最優先で読む**。資料作成では `projects/<案件名>/01_データ/` に置かれた
+7. **ローカルファイルを最優先で読む**。資料作成では `projects/<プロジェクト名>/<会社名>/01_データ/` に置かれた
    ファイル（md・txt・csv・json・png・jpg・pdf）を、ブリーフより先に読む。
    `.xlsx` が読めない場合は、CSVへの書き出しをユーザーに依頼する（勝手に変換処理を書かない）。
 
@@ -50,8 +53,11 @@
 ## 資料のビルド
 
 ```bash
-node engine/build.mjs "projects/<案件名>/02_ワーク/spec.js" "projects/<案件名>/03_納品/<案件名>_<YYYYMMDD>.html"
+node engine/build.mjs "projects/<プロジェクト名>/<会社名>/02_ワーク/spec_<YYYYMMDD>.js" \
+  "projects/<プロジェクト名>/<会社名>/03_納品/<会社名>_<YYYYMMDD>.html"
 ```
+
+パスに日本語が含まれるため、**必ずダブルクォートで囲む**。
 
 スキーマ：`engine/README.md`／テンプレート：`engine/specs/_TEMPLATE/spec.js`／完成例：`engine/specs/sample/spec.js`
 
