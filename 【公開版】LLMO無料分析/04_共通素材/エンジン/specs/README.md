@@ -13,7 +13,7 @@ node build.js "specs/<クライアント名>/spec.js" "<出力先>.pptx"
 |---|---|---|---|
 | `cover` | {badge,titleLines,client,meta,credit?} | 表紙 | ヒアリング |
 | `agenda` | [[no,title,desc]...] | 目次（6項目） | 固定でOK |
-| `scope` | {title,note,colW,rowH,header,rows,footnote} | 計測プロンプト表（無料版＝限定本数と明記） | ツール設定 |
+| `scope` | {title,note,colW,rowH,header,rows,footnote} | 計測プロンプト表（無料版＝限定本数と明記）。**`rows`は1行＝1プロンプト**で列挙する（複数プロンプトを「／」で1セルに詰め込まない）。表が寂しく見えるだけでなく、レポートの完成度が下がる | ツール設定 |
 | `facts` | [{n,t,b,c}]×3 | 結論FACT（🔵実測から） | 4分析の総合 |
 | `factsNote` | string | FACT出典脚注 | — |
 | `funnelKpi` | {subtitle,cards[4],reading[],note} | **現状分析① ファネルKPI**。cards={stage,kpi,value,detail,c} | `/monitoring` |
